@@ -169,6 +169,12 @@
   .d-orb .d-orb-fallback{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--serif);font-size:22px;font-weight:600}
   .d-name{margin:0;font-family:var(--serif);font-size:19px;font-weight:600;letter-spacing:.03em;line-height:1.25}
   .d-title{margin:5px 0 0;font-size:11.5px;color:var(--muted);line-height:1.5}
+  .d-ep{
+    margin:8px 0 0;display:flex;align-items:center;gap:8px;
+    font-family:var(--serif);font-size:15.5px;font-weight:600;letter-spacing:.32em;color:#e9dcc2;
+    text-shadow:0 0 14px rgba(200,64,47,.18);
+  }
+  .d-ep::before{content:"";flex:0 0 auto;width:3px;height:15px;border-radius:2px;background:var(--seal);box-shadow:0 0 9px rgba(200,64,47,.55)}
   .d-fac{display:inline-flex;align-items:center;gap:6px;margin-top:9px;padding:3px 9px;border-radius:999px;font-size:10.5px;border:1px solid currentColor}
   .d-note{margin:13px 0 0;font-size:12px;line-height:1.85;color:#b6b4bb;text-wrap:pretty}
   .d-sec{margin-top:18px}
@@ -292,6 +298,8 @@
   .qov-who{display:flex;align-items:center;gap:9px;margin-bottom:9px}
   .qov-who img{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--fc,#555);background:#1a1a1e;flex:0 0 auto}
   .qov-who .nm{font-family:var(--serif);font-size:13.5px;color:#f0eeeb;letter-spacing:.03em}
+  .qov-who .who-txt{display:flex;flex-direction:column;gap:1px;min-width:0}
+  .qov-who .ep{font-family:var(--serif);font-size:11px;font-weight:600;letter-spacing:.22em;color:#d9c99f}
   .qov-who .tt{font-size:10px;color:#7d7d85;margin-left:auto;font-variant-numeric:tabular-nums}
   .qov-quote{margin:0;font-family:var(--serif);font-size:14px;line-height:1.85;color:#eae7e3;text-wrap:pretty}
   .qov-quote::before{content:"「";color:var(--qc,#8b8b93);opacity:.7}
@@ -321,6 +329,8 @@
   #tip .t-row{display:flex;align-items:center;gap:10px}
   #tip .t-av{width:40px;height:40px;border-radius:50%;object-fit:cover;object-position:50% 50%;border:2px solid #666;flex:0 0 auto;background:#1a1a1e}
   #tip .t-n{font-family:var(--serif);font-size:14px;font-weight:600;color:#f0eeeb;letter-spacing:.02em;white-space:nowrap}
+  #tip .t-ep{margin-top:4px;display:flex;align-items:center;gap:6px;font-family:var(--serif);font-size:11.5px;font-weight:600;letter-spacing:.26em;color:#e3d6b8;white-space:nowrap}
+  #tip .t-ep::before{content:"";flex:0 0 auto;width:2px;height:11px;border-radius:2px;background:var(--seal)}
   #tip .t-r{margin-top:3px;font-size:10.5px;color:#8b8b93;line-height:1.5;white-space:nowrap}
   #tip .t-d{margin-top:5px;display:flex;align-items:center;gap:6px;font-size:10.5px;color:#8b8b93;white-space:nowrap}
   #tip .t-d i{font-style:normal;color:#63636b;margin-left:2px}
@@ -1081,6 +1091,21 @@ const NODES = [
     note:'柱间的弟弟，飞雷神、影分身、秽土转生等诸多禁术的创造者，建立了木叶的制度骨架。' }
 ];
 
+/* ── 四字评：用四个字把一个人钉住 ── */
+const EPITHET = {
+  naruto:'说到做到',    kakashi:'同伴为先',  sakura:'并肩而行',     minato:'相信儿子',  kushina:'为母则刚',
+  jiraiya:'薪火相传',   tsunade:'不再逃避',  orochimaru:'贪求一切', hiruzen:'慈父之心',
+  hinata:'只看着你',    neji:'笼中之鸟',     guy:'唯有青春',        lee:'只靠努力',     tenten:'忍具万千',
+  shikamaru:'不鸣则已', choji:'破茧成蝶',    ino:'心花怒放',        danzo:'必要之恶',
+  sasuke:'复仇之路',    itachi:'背负万罪',   obito:'因爱成魔',      madara:'以战止战',  shisui:'以身殉道',
+  sarada:'继承火影',
+  nagato:'以痛为道',    zetsu:'幕后黑手',    konan:'纸之天使',      kisame:'无名之刃',  deidara:'瞬间之美',
+  sasori:'永恒之美',    kakuzu:'唯利是图',   hidan:'邪神狂信',
+  gaara:'修罗之爱',     temari:'一扇定风',   kankuro:'傀儡护弟',
+  hashirama:'悬崖挚友', tobirama:'禁术之王'
+};
+NODES.forEach(n => { n.ep = EPITHET[n.id] || ''; });
+
 const LINKS = [
   ['minato','naruto','family','父子'],
   ['kushina','naruto','family','母子'],
@@ -1835,6 +1860,7 @@ function showTip(p, mx, my) {
     '<div class="t-row">' +
       (p.av ? '<img class="t-av" src="' + p.av + '" style="border-color:' + (emotionLens ? drv.color : fac.color) + '">' : '') +
       '<div><div class="t-n">' + p.name + '</div>' +
+      (p.ep ? '<div class="t-ep">' + p.ep + '</div>' : '') +
       '<div class="t-r">' + fac.name + ' · ' + p.title + '</div>' +
       '<div class="t-d"><span class="dot" style="background:' + drv.color + '"></span>' +
         '驱动力 · <b style="color:' + drv.color + '">' + drv.name + '</b>' +
@@ -1988,6 +2014,7 @@ function renderDetail() {
     '<div class="d-head">' + orbHtml(p, 60) +
       '<div>' +
         '<p class="d-name">' + p.name + '</p>' +
+        (p.ep ? '<p class="d-ep">' + p.ep + '</p>' : '') +
         '<p class="d-title">' + p.title + '</p>' +
         '<span class="d-fac" style="color:' + fac.color + '">' +
           crestSvg(p.f, 13, fac.color) + fac.name +
@@ -2160,7 +2187,7 @@ function runSearch(q) {
   q = q.trim().toLowerCase();
   if (!q) { suggestEl.classList.remove('open'); return; }
   const hits = nodes
-    .map(n => ({ n, s:(n.name.toLowerCase().includes(q) ? 10 : 0) + (n.short.toLowerCase().includes(q) ? 8 : 0) + (n.title.toLowerCase().includes(q) ? 3 : 0) }))
+    .map(n => ({ n, s:(n.name.toLowerCase().includes(q) ? 10 : 0) + (n.short.toLowerCase().includes(q) ? 8 : 0) + (n.title.toLowerCase().includes(q) ? 3 : 0) + (n.ep && n.ep.includes(q) ? 6 : 0) }))
     .filter(h => h.s > 0)
     .sort((a, b) => b.s - a.s || b.n.w - a.n.w)
     .slice(0, 7);
@@ -2175,7 +2202,7 @@ function runSearch(q) {
         ? '<img class="s-av" src="' + h.n.av + '" alt="" style="border:1.5px solid ' + FACTIONS[h.n.f].color + '">'
         : '<span class="dot" style="background:' + FACTIONS[h.n.f].color + '"></span>') +
       h.n.name +
-      '<span class="s-ttl">' + h.n.title + '</span>' +
+      '<span class="s-ttl">' + (h.n.ep && h.n.ep.includes(q) ? h.n.ep : h.n.title) + '</span>' +
     '</button>').join('');
   suggestEl.querySelectorAll('button').forEach(b =>
     b.addEventListener('click', () => jump(b.dataset.id)));
@@ -2277,7 +2304,10 @@ function qovCardHtml(it, themeColor) {
       '" style="--qc:' + themeColor + ';--fc:' + fac.color + '">' +
     '<div class="qov-who">' +
       (it.n.av ? '<img src="' + it.n.av + '" alt="">' : '') +
-      '<span class="nm">' + it.n.name + '</span>' +
+      '<span class="who-txt">' +
+        '<span class="nm">' + it.n.name + '</span>' +
+        (it.n.ep ? '<span class="ep">' + it.n.ep + '</span>' : '') +
+      '</span>' +
       '<span class="tt">' + it.n.title + '</span>' +
     '</div>' +
     '<p class="qov-quote">' + it.q.q + '</p>' +
@@ -2303,7 +2333,8 @@ function renderQuotes() {
       it.q.s.toLowerCase().includes(text) ||
       (it.q.d || '').toLowerCase().includes(text) ||
       it.n.name.toLowerCase().includes(text) ||
-      it.n.short.toLowerCase().includes(text)));
+      it.n.short.toLowerCase().includes(text) ||
+      (it.n.ep || '').includes(text)));
 
   qovCount.textContent = rows.length + ' / ' + ALLQ.length + ' 条 · ' + nodes.length + ' 个角色';
 
