@@ -1,3 +1,10 @@
 # wrangler / Pages 的本地缓存与发布暂存
 .wrangler/
 .deploy/
+
+# 视频生成产物（源文件在 video/，产物不提交）
+video/out/
+video/stills/
+video/frames/
+video/story.html
+video/data.json

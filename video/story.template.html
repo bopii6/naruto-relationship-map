@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>一张网 · 火影忍者人物关系图谱</title>
+<style>
+  html,body{margin:0;height:100%;background:#050506;overflow:hidden}
+  canvas{display:block;width:1920px;height:1080px}
+</style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>
+/*__DATA__*/
+</script>
+<script>
+(() => {
+'use strict';
+
+window.__err = null;
+window.addEventListener('error', e => { window.__err = String(e.message || e.error); });
+const W = 1920, H = 1080, TAU = Math.PI * 2;
+const DUR = 90;
+const canvas = document.getElementById('stage');
+const ctx = canvas.getContext('2d', { alpha: false });
+
+const F = {
+  serif: '"Noto Serif SC","Songti SC","STSong","SimSun",serif',
+  sans: '"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif'
+};
+
+/* ══════════════════════════════════════════════════════════════════
+   0. 小工具
+   ══════════════════════════════════════════════════════════════════ */
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const lerp = (a, b, k) => a + (b - a) * k;
+const smoothstep = (a, b, x) => {
+  if (a === b) return x >= b ? 1 : 0;
+  const t = clamp((x - a) / (b - a), 0, 1);
+  return t * t * (3 - 2 * t);
+};
+const easeOutCubic = x => 1 - Math.pow(1 - x, 3);
+const easeInOutCubic = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const easeOutExpo = x => x >= 1 ? 1 : 1 - Math.pow(2, -10 * x);
+const easeOutBack = x => {
+  const c1 = 1.70158, c3 = c1 + 1;
+  return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+};
+const hex2rgb = h => {
+  const n = parseInt(h.replace('#', ''), 16);
+  return [n >> 16 & 255, n >> 8 & 255, n & 255];
+};
+const rgba = (hex, a) => {
+  const [r, g, b] = hex2rgb(hex);
+  return `rgba(${r},${g},${b},${a})`;
+};
+const mixHex = (a, b, k) => {
+  const A = hex2rgb(a), B = hex2rgb(b);
+  return '#' + [0, 1, 2].map(i => Math.round(lerp(A[i], B[i], k)).toString(16).padStart(2, '0')).join('');
+};
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function rr(c, x, y, w, h, r) {
+  r = Math.min(r, w / 2, h / 2);
+  c.beginPath();
+  c.moveTo(x + r, y);
+  c.arcTo(x + w, y, x + w, y + h, r);
+  c.arcTo(x + w, y + h, x, y + h, r);
+  c.arcTo(x, y + h, x, y, r);
+  c.arcTo(x, y, x + w, y, r);
+  c.closePath();
+}
+const fmtTime = s => {
+  const m = Math.floor(s / 60), r = Math.floor(s % 60);
+  return String(m).padStart(2, '0') + ':' + String(r).padStart(2, '0');
+};
+
+/* ══════════════════════════════════════════════════════════════════
+   1. 数据
+   ══════════════════════════════════════════════════════════════════ */
+const NODES = DATA.NODES.map((n, idx) => {
+  const di = DATA.DRIVE_INFO[n.id] || {};
+  return Object.assign({}, n, {
+    idx,
+    drive: di.d || 'protect',
+    heat: di.heat == null ? 50 : di.heat,
+    quote: di.q || '',
+    why: di.w || '',
+    av: DATA.AVATARS[n.id] || null
+  });
+});
+const BY_ID = new Map(NODES.map(n => [n.id, n]));
+const LINKS = DATA.LINKS.map(e => Object.assign({}, e));
+const EVENTS = DATA.EVENTS;
+const FACTIONS = DATA.FACTIONS;
+const REL = DATA.REL;
+const DRIVES = DATA.DRIVES;
+const DRIVE_ORDER = DATA.DRIVE_ORDER;
+const REL_ORDER = DATA.REL_ORDER;
+const CRESTS = DATA.CRESTS;
+
+const driveColor = n => (DRIVES[n.drive] || DRIVES.protect).color;
+const factionColor = n => (FACTIONS[n.f] || FACTIONS.konoha).color;
+
+/* 同一对角色可能有多条关系（例如鸣人—佐助），让它们弯向相反方向 */
+const pairCount = {};
+LINKS.forEach(e => {
+  const k = [e.a, e.b].sort().join('|');
+  pairCount[k] = (pairCount[k] || 0) + 1;
+  const n = pairCount[k];
+  e.bend = (n % 2 === 1 ? 1 : -1) * (1 + Math.floor((n - 1) / 2) * 0.85);
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   2. 布局（完全确定性）
+   ══════════════════════════════════════════════════════════════════ */
+const BASE = {};
+const put = (id, x, y) => { BASE[id] = { x, y }; };
+function ring(ids, cx, cy, r, start) {
+  ids.forEach((id, i) => {
+    const a = start + i * TAU / ids.length;
+    put(id, cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+  });
+}
+
+put('naruto', 760, 545);
+ring(['kakashi', 'sakura', 'jiraiya', 'hinata', 'shikamaru', 'tsunade'], 760, 545, 125, -Math.PI / 2);
+ring(['minato', 'kushina', 'orochimaru', 'hiruzen', 'neji', 'guy', 'lee', 'tenten', 'choji', 'ino', 'danzo'], 760, 545, 250, -Math.PI / 2 - 0.18);
+
+ring(['sasuke', 'itachi', 'obito', 'madara', 'shisui', 'sarada'], 1450, 305, 145, -Math.PI / 2);
+ring(['nagato', 'konan', 'kisame', 'deidara', 'sasori', 'kakuzu', 'hidan', 'zetsu'], 1490, 800, 195, -Math.PI / 2);
+ring(['gaara', 'temari', 'kankuro'], 430, 850, 105, -Math.PI / 2);
+put('hashirama', 320, 270);
+put('tobirama', 455, 270);
+
+const NARUTO_RING = ['minato', 'kushina', 'hinata', 'sakura', 'gaara', 'kakashi', 'sasuke', 'nagato', 'obito', 'madara', 'neji', 'jiraiya'];
+const RING_POS = {};
+NARUTO_RING.forEach((id, i) => {
+  const a = -Math.PI / 2 + i * TAU / NARUTO_RING.length;
+  RING_POS[id] = { x: 760 + Math.cos(a) * 315, y: 545 + Math.sin(a) * 315 };
+});
+
+const FACTION_LABEL = {
+  konoha: { x: 760, y: 232 },
+  uchiha: { x: 1450, y: 100 },
+  akatsuki: { x: 1490, y: 527 },
+  sand: { x: 430, y: 688 },
+  senju: { x: 390, y: 184 }
+};
+
+/* ══════════════════════════════════════════════════════════════════
+   3. 时间轴
+   ══════════════════════════════════════════════════════════════════ */
+const T = { graph: 7.6, lens: 24, focus: 42, emo: 62, events: 78, end: 86 };
+
+const focusAmount = t => smoothstep(42.0, 45.0, t) * (1 - smoothstep(60.2, 62.0, t));
+const lensAmount = t => smoothstep(23.8, 25.0, t) * (1 - smoothstep(40.4, 41.8, t));
+const emoAmount = t => smoothstep(62.0, 64.8, t) * (1 - smoothstep(77.0, 78.0, t));
+const eventAmount = t => smoothstep(77.6, 78.3, t) * (1 - smoothstep(85.7, 86.2, t));
+
+function activeType(t) {
+  if (t < 24 || t > 40.8) return null;
+  const i = Math.floor((t - 24) / 2.8);
+  return REL_ORDER[clamp(i, 0, 5)];
+}
+
+const FOCUS_BEATS = [
+  { id: 'jiraiya', start: 46.4, end: 50.2, tag: '师徒', mark: '预言之子', quote: '活下去的意志，才是真正的力量。', note: '像爷爷一样的师父' },
+  { id: 'hinata', start: 50.2, end: 54.0, tag: '家人', mark: '一直都是你在看着我', quote: '就算是自私的喜欢，我也想为了你变强。', note: '只看着你' },
+  { id: 'sasuke', start: 54.0, end: 57.8, tag: '羁绊 / 宿敌', mark: '拼了命也要把你拉回来', quote: '就算被大卸八块，我也要把佐助从大蛇丸那里夺回来。', note: '复仇之路' },
+  { id: 'nagato', start: 57.8, end: 61.4, tag: '宿敌', mark: '听懂了你的痛', quote: '感受痛苦吧，思考痛苦吧。', note: '以痛为道' }
+];
+
+function beatAt(t) {
+  for (let i = 0; i < FOCUS_BEATS.length; i++) {
+    const b = FOCUS_BEATS[i];
+    const k = smoothstep(b.start, b.start + 0.35, t) * (1 - smoothstep(b.end - 0.35, b.end, t));
+    if (k > 0.001) return { b, k, i };
+  }
+  return null;
+}
+
+const SPOTS = [
+  { id: 'itachi', start: 69.5, end: 72.4, line: '最深的爱，伪装成最深的恨。' },
+  { id: 'obito', start: 72.4, end: 75.3, line: '因爱成魔，把整个世界当成了敌人。' },
+  { id: 'nagato', start: 75.3, end: 77.8, line: '以痛为道，相信痛才能换来和平。' }
+];
+function spotAt(t) {
+  for (let i = 0; i < SPOTS.length; i++) {
+    const s = SPOTS[i];
+    const k = smoothstep(s.start, s.start + 0.4, t) * (1 - smoothstep(s.end - 0.4, s.end, t));
+    if (k > 0.001) return { s, k, i };
+  }
+  return null;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   4. 资源
+   ══════════════════════════════════════════════════════════════════ */
+const IMGS = {};
+let bgCanvas = null;
+const CREST_PATHS = {};
+const DUST = [];
+const rand = mulberry32(20261019);
+
+function buildCrestPaths() {
+  for (const k of Object.keys(CRESTS)) {
+    const c = CRESTS[k] || {};
+    CREST_PATHS[k] = {
+      leaf: c.leaf ? new Path2D(c.leaf) : null,
+      line: c.line ? new Path2D(c.line) : null,
+      glyph: c.glyph || null
+    };
+  }
+}
+
+function drawCrest(key, x, y, size, color, alpha) {
+  const c = CREST_PATHS[key];
+  if (!c) return;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  if (c.glyph) {
+    ctx.fillStyle = color;
+    ctx.font = `600 ${(size * .82).toFixed(1)}px ${F.serif}`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(c.glyph, x, y + size * .04);
+    ctx.restore();
+    return;
+  }
+  const s = size / 24;
+  ctx.translate(x - size / 2, y - size / 2);
+  ctx.scale(s, s);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.8;
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  if (c.leaf) ctx.stroke(c.leaf);
+  if (c.line && size >= 16) ctx.stroke(c.line);
+  ctx.restore();
+}
+
+function buildBackground() {
+  bgCanvas = document.createElement('canvas');
+  bgCanvas.width = W; bgCanvas.height = H;
+  const g = bgCanvas.getContext('2d');
+
+  const base = g.createRadialGradient(960, 470, 80, 960, 540, 1180);
+  base.addColorStop(0, '#17140f');
+  base.addColorStop(.42, '#100e0b');
+  base.addColorStop(.78, '#0a0908');
+  base.addColorStop(1, '#060607');
+  g.fillStyle = base;
+  g.fillRect(0, 0, W, H);
+
+  const warm = g.createRadialGradient(300, 900, 20, 300, 900, 620);
+  warm.addColorStop(0, 'rgba(200,64,47,.075)');
+  warm.addColorStop(1, 'rgba(200,64,47,0)');
+  g.fillStyle = warm; g.fillRect(0, 0, W, H);
+
+  const cool = g.createRadialGradient(1640, 180, 20, 1640, 180, 620);
+  cool.addColorStop(0, 'rgba(110,128,158,.075)');
+  cool.addColorStop(1, 'rgba(110,128,158,0)');
+  g.fillStyle = cool; g.fillRect(0, 0, W, H);
+
+  /* 和纸纤维 */
+  const rnd = mulberry32(77123);
+  for (let i = 0; i < 1100; i++) {
+    const x = rnd() * W, y = rnd() * H;
+    const len = 8 + rnd() * 70;
+    const a = 0.008 + rnd() * 0.022;
+    g.strokeStyle = `rgba(226,212,186,${a})`;
+    g.lineWidth = 0.5 + rnd() * 0.7;
+    g.beginPath();
+    g.moveTo(x, y);
+    g.lineTo(x + len, y + (rnd() - .5) * 3);
+    g.stroke();
+  }
+
+  /* 细颗粒：只扰动 RGB，保持整张底图不透明 */
+  const img = g.getImageData(0, 0, W, H);
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const n = (Math.random() - .5) * 17;
+    d[i] = d[i] + n;
+    d[i + 1] = d[i + 1] + n;
+    d[i + 2] = d[i + 2] + n;
+  }
+  g.putImageData(img, 0, 0);
+
+  /* 暗角 */
+  const vig = g.createRadialGradient(960, 540, 300, 960, 540, 1150);
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(.72, 'rgba(0,0,0,.18)');
+  vig.addColorStop(1, 'rgba(0,0,0,.62)');
+  g.fillStyle = vig; g.fillRect(0, 0, W, H);
+}
+
+function buildDust() {
+  const rnd = mulberry32(99881);
+  for (let i = 0; i < 54; i++) {
+    DUST.push({
+      x: rnd() * W, y: rnd() * H,
+      r: .6 + rnd() * 1.8,
+      ph: rnd() * TAU,
+      sp: .15 + rnd() * .5,
+      a: .06 + rnd() * .16
+    });
+  }
+}
+
+function loadImages() {
+  const jobs = NODES.filter(n => n.av).map(n => new Promise(res => {
+    const im = new Image();
+    im.onload = () => { IMGS[n.id] = im; res(); };
+    im.onerror = () => res();
+    im.src = n.av;
+  }));
+  return Promise.all(jobs);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   5. 背景
+   ══════════════════════════════════════════════════════════════════ */
+function drawBackground(t) {
+  ctx.drawImage(bgCanvas, 0, 0);
+
+  /* 漩涡叶水印 */
+  const p = CREST_PATHS.konoha;
+  if (p && p.line) {
+    ctx.save();
+    ctx.translate(960, 540);
+    ctx.rotate(-0.12 + t * 0.0035);
+    const s = 690 / 24;
+    ctx.scale(s, s);
+    ctx.translate(-12, -12);
+    ctx.strokeStyle = 'rgba(214,166,96,.050)';
+    ctx.lineWidth = 0.055;
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.stroke(p.line);
+    ctx.restore();
+  }
+
+  /* 尘埃 */
+  for (const d of DUST) {
+    const x = (d.x + Math.sin(t * d.sp + d.ph) * 26 + W) % W;
+    const y = (d.y - t * d.sp * 11 + Math.sin(t * .3 + d.ph) * 12 + H * 2) % H;
+    ctx.globalAlpha = d.a * (.55 + .45 * Math.sin(t * 1.2 + d.ph));
+    ctx.fillStyle = '#d6a660';
+    ctx.beginPath(); ctx.arc(x, y, d.r, 0, TAU); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  /* 章节切换的冲击环 */
+  const pulses = [7.5, 24, 42, 62, 78, 86];
+  for (const pt of pulses) {
+    const k = (t - pt) / 1.6;
+    if (k > 0 && k < 1) {
+      const r = 60 + 720 * easeOutCubic(k);
+      ctx.strokeStyle = `rgba(200,64,47,${.20 * (1 - k)})`;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.arc(960, 540, r, 0, TAU); ctx.stroke();
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   6. 相机 / 图
+   ══════════════════════════════════════════════════════════════════ */
+function cameraAt(t) {
+  let x = 960, y = 540, s = 1.025;
+  s -= 0.025 * smoothstep(7.6, 22, t);
+  s += 0.05 * lensAmount(t);
+
+  const f = focusAmount(t);
+  x = lerp(x, 860, f); y = lerp(y, 545, f); s = lerp(s, 1.12, f);
+
+  const e = emoAmount(t);
+  x = lerp(x, 960, e); y = lerp(y, 520, e); s = lerp(s, 0.96, e);
+
+  const ev = eventAmount(t);
+  x = lerp(x, 960, ev); y = lerp(y, 540, ev); s = lerp(s, 1.0, ev);
+  return { x, y, s };
+}
+
+function nodePos(n, f) {
+  const b = BASE[n.id];
+  const r = RING_POS[n.id];
+  if (!r || f <= 0) return b;
+  return { x: lerp(b.x, r.x, f), y: lerp(b.y, r.y, f) };
+}
+
+function edgePoint(a, b, e, u) {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const nx = -dy / len, ny = dx / len;
+  const bend = e.bend * (12 + Math.min(len * 0.1, 46));
+  const cx = (a.x + b.x) / 2 + nx * bend;
+  const cy = (a.y + b.y) / 2 + ny * bend;
+  const iu = 1 - u;
+  return {
+    x: iu * iu * a.x + 2 * iu * u * cx + u * u * b.x,
+    y: iu * iu * a.y + 2 * iu * u * cy + u * u * b.y
+  };
+}
+
+function drawEdges(t, P, f, lensK, emoK, evK, beat, spot) {
+  for (const e of LINKS) {
+    const a = P[e.a], b = P[e.b];
+    if (!a || !b) continue;
+
+    let prog = smoothstep(11 + e.i * 0.10, 13.4 + e.i * 0.10, t);
+    if (f > 0.5) prog = 1;
+    if (prog <= 0.002) continue;
+
+    let alpha = 0.40 * smoothstep(7.8, 9.2, t);
+    let width = 1.15;
+    let col = (REL[e.type] || REL.bond).color;
+    let dash = null;
+
+    if (lensK > 0) {
+      const active = e.type === activeType(t);
+      alpha = lerp(alpha, active ? 0.96 : 0.035, lensK);
+      width = lerp(width, active ? 2.7 : 0.65, lensK);
+      if (active && (e.type === 'rival' || e.type === 'control')) dash = (REL[e.type].dash || []).slice();
+      if (!active) col = mixHex(col, '#6a6a72', .55);
+    }
+
+    if (f > 0) {
+      const touch = e.a === 'naruto' || e.b === 'naruto';
+      if (!touch) alpha *= clamp(1 - f * 1.45, 0, 1);
+      else {
+        alpha = Math.max(alpha, 0.66 * f);
+        width += 0.85 * f;
+      }
+    }
+
+    if (beat && f > 0.4) {
+      const hit = (e.a === 'naruto' && e.b === beat.b.id) || (e.b === 'naruto' && e.a === beat.b.id);
+      if (hit) {
+        alpha = Math.max(alpha, 0.95 * beat.k);
+        width += 1.7 * beat.k;
+      } else {
+        alpha *= (1 - 0.88 * beat.k);
+      }
+    }
+
+    if (emoK > 0) {
+      const A = BY_ID.get(e.a), B = BY_ID.get(e.b);
+      const dc = mixHex(driveColor(A), driveColor(B), .5);
+      col = mixHex(col, dc, emoK);
+      const heat = clamp((e.heat - 50) / 50, 0, 1);
+      const hw = 0.9 + Math.pow(heat, 1.15) * 3.2;
+      width = lerp(width, hw, emoK);
+      alpha = lerp(alpha, 0.46, emoK);
+    }
+
+    if (spot && emoK > 0.4) {
+      const hit = e.a === spot.s.id || e.b === spot.s.id;
+      if (hit) {
+        alpha = Math.max(alpha, 0.86 * spot.k);
+        width += 1.1 * spot.k;
+      } else {
+        alpha *= (1 - 0.82 * spot.k);
+      }
+    }
+
+    if (evK > 0) alpha *= (1 - evK * 0.9);
+    if (alpha <= 0.004) continue;
+
+    ctx.save();
+    ctx.lineCap = 'round';
+    if (dash) ctx.setLineDash(dash);
+    ctx.strokeStyle = rgba(col, alpha);
+    ctx.lineWidth = width;
+    if (lensK > 0.5 && e.type === activeType(t)) {
+      ctx.shadowColor = rgba(col, .55);
+      ctx.shadowBlur = 16;
+    }
+    if (beat && alpha > .7) {
+      ctx.shadowColor = rgba(col, .5);
+      ctx.shadowBlur = 18;
+    }
+
+    const steps = 22;
+    ctx.beginPath();
+    for (let i = 0; i <= steps; i++) {
+      const u = (i / steps) * prog;
+      const p = edgePoint(a, b, e, u);
+      if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function drawNode(n, x, y, alpha, f, emoK, spotK, t) {
+  if (alpha <= 0.004) return;
+  const isRing = !!RING_POS[n.id];
+
+  let r = n.w === 3 ? 34 : n.w === 2 ? 28 : 23;
+  r *= 1 + 0.10 * f * (isRing ? 1 : 0);
+  r *= 1 + 0.06 * f * (n.id === 'naruto' ? 1 : 0);
+  r *= 1 + 0.32 * spotK;
+
+  const halo = mixHex(factionColor(n), driveColor(n), emoK);
+  const glow = 1 + (spotK || 0) * 1.4;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  const g = ctx.createRadialGradient(x, y, r * .75, x, y, r * 2.0 * glow);
+  g.addColorStop(0, rgba(halo, .26 + .20 * spotK));
+  g.addColorStop(.55, rgba(halo, .10));
+  g.addColorStop(1, rgba(halo, 0));
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(x, y, r * 2.0 * glow, 0, TAU); ctx.fill();
+
+  const im = IMGS[n.id];
+  ctx.save();
+  ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.clip();
+  if (im) {
+    ctx.drawImage(im, x - r, y - r, r * 2, r * 2);
+  } else {
+    ctx.fillStyle = '#1b1b20';
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  ctx.restore();
+
+  ctx.beginPath(); ctx.arc(x, y, r, 0, TAU);
+  ctx.strokeStyle = rgba(halo, .92);
+  ctx.lineWidth = 2.1 + spotK * 1.2;
+  ctx.stroke();
+
+  ctx.beginPath(); ctx.arc(x, y, r + 1.8, 0, TAU);
+  ctx.strokeStyle = 'rgba(8,8,10,.55)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  if (spotK > 0.02) {
+    ctx.beginPath(); ctx.arc(x, y, r + 9 + 4 * Math.sin(spotK * Math.PI), 0, TAU);
+    ctx.strokeStyle = rgba(halo, .35 * spotK);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  /* 名字 */
+  const showLabel = t > 0 && alpha > .05;
+  if (showLabel) {
+    const full = (f > .4 && (isRing || n.id === 'naruto')) || n.w === 3;
+    const label = full ? n.name : n.short;
+    const size = 12.5 + (f > .4 && isRing ? 1.5 : 0) + (n.w === 3 ? 1 : 0);
+    ctx.font = `500 ${size}px ${F.sans}`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.shadowColor = 'rgba(0,0,0,.95)';
+    ctx.shadowBlur = 7;
+    ctx.fillStyle = rgba('#e8e6e3', .82);
+    ctx.fillText(label, x, y + r + 8);
+    ctx.shadowBlur = 0;
+  }
+
+  ctx.restore();
+  return { r, halo };
+}
+
+function drawFactionLabels(t) {
+  const k = smoothstep(15.6, 18.2, t) * (1 - smoothstep(41.0, 42.6, t));
+  if (k <= 0.001) return;
+  for (const key of Object.keys(FACTION_LABEL)) {
+    const pos = FACTION_LABEL[key], f = FACTIONS[key];
+    if (!f) continue;
+    const alpha = k * (0.55 + 0.10 * Math.sin(t * .8 + key.length));
+    const x = pos.x, y = pos.y;
+    drawCrest(key, x - 48, y, 21, f.color, alpha * .9);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.font = `500 13px ${F.sans}`;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = rgba(f.color, .95);
+    ctx.fillText(f.name, x - 30, y + 1);
+    const w = ctx.measureText(f.name).width;
+    ctx.font = `400 10.5px ${F.sans}`;
+    ctx.fillStyle = 'rgba(180,180,188,.6)';
+    ctx.fillText(String(NODES.filter(n => n.f === key).length), x - 30 + w + 8, y + 1);
+    ctx.restore();
+  }
+}
+
+function drawHeatLabels(t, P, emoK) {
+  if (emoK <= .2) return;
+  const k = smoothstep(65.2, 66.4, t) * (1 - smoothstep(69.0, 69.8, t));
+  if (k <= .001) return;
+  const top = NODES.slice().sort((a, b) => b.heat - a.heat).slice(0, 6);
+  for (const n of top) {
+    const p = P[n.id];
+    if (!p) continue;
+    const c = driveColor(n);
+    const y = p.y - (n.w === 3 ? 48 : 42);
+    ctx.save();
+    ctx.globalAlpha = k * emoK;
+    ctx.font = `600 12px ${F.sans}`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.fillStyle = rgba(c, .95);
+    ctx.fillText(String(n.heat), p.x, y - 4);
+    ctx.fillStyle = 'rgba(160,160,170,.35)';
+    ctx.fillRect(p.x - 16, y, 32, 1.5);
+    ctx.fillStyle = rgba(c, .85);
+    ctx.fillRect(p.x - 16, y, 32 * n.heat / 100, 1.5);
+    ctx.restore();
+  }
+}
+
+function drawGraph(t) {
+  const f = focusAmount(t);
+  const lensK = lensAmount(t);
+  const emoK = emoAmount(t);
+  const evK = eventAmount(t);
+  const beat = beatAt(t);
+  const spot = spotAt(t);
+
+  const P = {};
+  for (const n of NODES) P[n.id] = nodePos(n, f);
+
+  drawFactionLabels(t);
+  drawEdges(t, P, f, lensK, emoK, evK, beat, spot);
+
+  const order = NODES.slice().sort((a, b) => {
+    const sa = spot && spot.s.id === a.id ? 1 : 0;
+    const sb = spot && spot.s.id === b.id ? 1 : 0;
+    return sa - sb || a.w - b.w;
+  });
+
+  for (const n of order) {
+    let alpha = smoothstep(7.8 + n.idx * 0.13, 9.7 + n.idx * 0.13, t);
+    if (f > 0 && !RING_POS[n.id] && n.id !== 'naruto') alpha *= clamp(1 - f * 1.55, 0, 1);
+    alpha *= 1 - 0.38 * lensK;
+    alpha *= 1 - evK * 0.86;
+    if (spot) {
+      const isTarget = spot.s.id === n.id;
+      alpha *= isTarget ? 1 : (1 - 0.72 * spot.k);
+    }
+    if (alpha <= 0.004) continue;
+
+    const p = P[n.id];
+    const spotK = spot && spot.s.id === n.id ? spot.k : 0;
+    drawNode(n, p.x, p.y, alpha, f, emoK, spotK, t);
+  }
+
+  /* 精确的热度数字留给聚光卡片，图上只保留线宽 */
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   7. 屏幕层：标题、图例、卡片
+   ══════════════════════════════════════════════════════════════════ */
+function tracked(text, x, y, font, color, tracking, alpha, align) {
+  if (alpha <= 0) return 0;
+  ctx.save();
+  ctx.font = font;
+  ctx.fillStyle = color;
+  ctx.globalAlpha = alpha;
+  ctx.textBaseline = 'middle';
+  const chars = [...text];
+  const ws = chars.map(c => ctx.measureText(c).width);
+  const total = ws.reduce((a, b) => a + b, 0) + tracking * Math.max(0, chars.length - 1);
+  let cx = align === 'left' ? x : align === 'right' ? x - total : x - total / 2;
+  ctx.textAlign = 'left';
+  for (let i = 0; i < chars.length; i++) {
+    ctx.fillText(chars[i], cx, y);
+    cx += ws[i] + tracking;
+  }
+  ctx.restore();
+  return total;
+}
+
+function trackedReveal(text, x, y, font, color, tracking, alpha, progress) {
+  if (alpha <= 0) return;
+  ctx.save();
+  ctx.font = font;
+  ctx.fillStyle = color;
+  ctx.textBaseline = 'middle';
+  const chars = [...text];
+  const ws = chars.map(c => ctx.measureText(c).width);
+  const total = ws.reduce((a, b) => a + b, 0) + tracking * Math.max(0, chars.length - 1);
+  let cx = x - total / 2;
+  ctx.textAlign = 'left';
+  for (let i = 0; i < chars.length; i++) {
+    const a = clamp(progress * chars.length - i, 0, 1);
+    ctx.globalAlpha = alpha * a;
+    ctx.fillText(chars[i], cx, y + (1 - a) * 8);
+    cx += ws[i] + tracking;
+  }
+  ctx.restore();
+}
+
+function wrap(text, font, maxWidth) {
+  ctx.save();
+  ctx.font = font;
+  const lines = [];
+  let line = '';
+  for (const ch of text) {
+    if (ch === '\n') { lines.push(line); line = ''; continue; }
+    const test = line + ch;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      lines.push(line); line = ch;
+    } else line = test;
+  }
+  if (line) lines.push(line);
+  ctx.restore();
+  return lines;
+}
+
+function panel(x, y, w, h, alpha, accent) {
+  if (alpha <= 0) return;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = 'rgba(11,11,13,.82)';
+  rr(ctx, x, y, w, h, 7); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.075)';
+  ctx.lineWidth = 1;
+  rr(ctx, x + .5, y + .5, w - 1, h - 1, 7); ctx.stroke();
+  ctx.fillStyle = accent || '#c8402f';
+  ctx.fillRect(x, y + 18, 2.5, Math.min(58, h - 36));
+  ctx.restore();
+}
+
+function drawSeal(x, y, size, char, alpha, rot) {
+  if (alpha <= 0) return;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rot || 0);
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = '#c8402f';
+  rr(ctx, -size / 2, -size / 2, size, size, 4); ctx.fill();
+  ctx.strokeStyle = 'rgba(244,239,230,.20)';
+  ctx.lineWidth = 1;
+  rr(ctx, -size / 2 + 3, -size / 2 + 3, size - 6, size - 6, 2); ctx.stroke();
+  ctx.fillStyle = '#f4efe6';
+  ctx.font = `700 ${size * .56}px ${F.serif}`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(char, 0, size * .035);
+  ctx.restore();
+}
+
+function drawChapter(t) {
+  if (t < 7.8 || t > 86) return;
+  let no = '01', name = '一张网';
+  if (t >= 78) { no = '05'; name = '年表'; }
+  else if (t >= 62) { no = '04'; name = '情感'; }
+  else if (t >= 42) { no = '03'; name = '一个人'; }
+  else if (t >= 24) { no = '02'; name = '结构'; }
+  const a = smoothstep(7.8, 9.2, t) * (1 - smoothstep(84.8, 86, t)) * .72;
+  ctx.save();
+  ctx.globalAlpha = a;
+  ctx.fillStyle = '#c8402f';
+  ctx.fillRect(92, 68, 26, 1.5);
+  ctx.font = `500 10px ${F.sans}`;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'rgba(200,64,47,.95)';
+  ctx.fillText(no, 92, 88);
+  ctx.font = `500 15px ${F.sans}`;
+  ctx.fillStyle = 'rgba(232,230,227,.82)';
+  ctx.fillText(name, 116, 88);
+
+  tracked('NARUTO — A RELATIONSHIP MAP', 1828, 76, `500 9px ${F.sans}`, 'rgba(200,198,192,.55)', 2.6, a, 'right');
+  ctx.font = `400 9px ${F.sans}`;
+  ctx.fillStyle = 'rgba(200,198,192,.32)';
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  ctx.fillText(fmtTime(t) + ' / 01:30', 1828, 1000);
+  ctx.restore();
+}
+
+function drawIntro(t) {
+  if (t > 8.2) return;
+  const out = 1 - smoothstep(7.0, 8.1, t);
+
+  ctx.save();
+  ctx.globalAlpha = out;
+
+  tracked('NARUTO — A RELATIONSHIP MAP', 960, 138, `500 10px ${F.sans}`, 'rgba(200,198,192,.42)', 3.4, 1, 'center');
+
+  const p1 = smoothstep(1.0, 2.1, t);
+  const a1 = p1 * (1 - smoothstep(3.7, 4.4, t));
+  if (a1 > 0) {
+    trackedReveal('你记住的是忍术。', 960, 498, `500 46px ${F.serif}`, 'rgba(232,230,227,.92)', 4, a1, p1);
+  }
+
+  const p2 = smoothstep(4.2, 5.3, t);
+  const a2 = p2 * (1 - smoothstep(6.7, 7.4, t));
+  if (a2 > 0) {
+    const font = `600 68px ${F.serif}`;
+    ctx.font = font;
+    const parts = [
+      { s: '其实它讲的是', c: 'rgba(232,230,227,.94)' },
+      { s: '关系', c: '#c8402f' },
+      { s: '。', c: 'rgba(232,230,227,.94)' }
+    ];
+    const tr = 6;
+    const ws = parts.map(p => ctx.measureText(p.s).width + tr * ([...p.s].length - 1));
+    const total = ws.reduce((a, b) => a + b, 0) + tr * 2;
+    let cx = 960 - total / 2;
+    for (let pi = 0; pi < parts.length; pi++) {
+      const p = parts[pi];
+      const chars = [...p.s];
+      ctx.fillStyle = p.c;
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      for (let i = 0; i < chars.length; i++) {
+        const local = clamp(p2 * 12 - (pi * 4 + i) * .7, 0, 1);
+        ctx.globalAlpha = out * a2 * local;
+        ctx.fillText(chars[i], cx, 498 + (1 - local) * 10);
+        cx += ctx.measureText(chars[i]).width + tr;
+      }
+      cx += tr;
+    }
+    ctx.globalAlpha = out;
+    const lw = 260 * smoothstep(5.0, 6.0, t);
+    ctx.fillStyle = 'rgba(200,64,47,.65)';
+    ctx.fillRect(960 - lw / 2, 560, lw, 1.2);
+  }
+
+  ctx.restore();
+}
+
+function drawGraphCaption(t) {
+  const k = smoothstep(17.5, 19.0, t) * (1 - smoothstep(23.2, 24.2, t));
+  if (k <= 0) return;
+  ctx.save();
+  ctx.globalAlpha = k;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'rgba(232,230,227,.94)';
+  ctx.font = `500 30px ${F.serif}`;
+  ctx.fillText('37 位角色，60 条关系', 960, 962);
+  tracked('五个阵营，一张网', 960, 1000, `400 12px ${F.sans}`, 'rgba(180,180,188,.72)', 2.4, 1, 'center');
+  ctx.restore();
+}
+
+const LENS_DESC = {
+  family: '血缘把人和人绑在一起，也把仇恨一起传下去。',
+  master: '师徒，是火之意志的传递方式。',
+  team: '同班，是第一批自己选择的家人。',
+  bond: '羁绊，是打碎之后还会长回来的东西。',
+  rival: '宿敌，是最了解你的那个人。',
+  control: '操控，是把别人当成棋子。'
+};
+
+function drawLens(t) {
+  const k = lensAmount(t);
+  if (k <= .001) return;
+  const type = activeType(t);
+  if (!type) return;
+  const r = REL[type];
+  const count = LINKS.filter(e => e.type === type).length;
+
+  const tk = smoothstep(24.0, 24.8, t) * (1 - smoothstep(40.2, 41.0, t));
+  ctx.save();
+  ctx.globalAlpha = tk;
+
+  tracked('RELATIONSHIP / 结构镜头', 960, 88, `500 9.5px ${F.sans}`, 'rgba(200,198,192,.45)', 3, 1, 'center');
+
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = rgba(r.color, .95);
+  ctx.font = `600 54px ${F.serif}`;
+  ctx.fillText(r.name, 960, 152);
+
+  ctx.fillStyle = 'rgba(232,230,227,.58)';
+  ctx.font = `400 15px ${F.serif}`;
+  ctx.fillText(LENS_DESC[type], 960, 202);
+
+  ctx.strokeStyle = 'rgba(255,255,255,.05)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(300, 938); ctx.lineTo(1620, 938); ctx.stroke();
+
+  const itemW = 220;
+  const totalW = itemW * REL_ORDER.length;
+  const startX = 960 - totalW / 2;
+  REL_ORDER.forEach((key, i) => {
+    const rr2 = REL[key];
+    const active = key === type;
+    const cnt = LINKS.filter(e => e.type === key).length;
+    const x = startX + i * itemW + itemW / 2;
+    const a = active ? 1 : .32;
+    ctx.globalAlpha = tk * a;
+
+    ctx.fillStyle = rr2.color;
+    ctx.fillRect(x - 42, 972, 84, active ? 2.4 : 1);
+    ctx.font = `500 ${active ? 17 : 14}px ${F.sans}`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = active ? '#e8e6e3' : 'rgba(180,180,188,.75)';
+    ctx.fillText(rr2.name, x, 1002);
+    ctx.font = `400 10px ${F.sans}`;
+    ctx.fillStyle = 'rgba(180,180,188,.55)';
+    ctx.fillText(String(cnt).padStart(2, '0'), x, 1026);
+  });
+
+  ctx.restore();
+}
+
+function drawFocusCard(t) {
+  const f = focusAmount(t);
+  if (f <= .02) return;
+  const baseA = smoothstep(43.2, 45.2, t) * (1 - smoothstep(60.6, 61.8, t));
+  if (baseA <= 0) return;
+
+  const x = 1206, y = 150, w = 574, h = 600;
+  panel(x, y, w, h, baseA * .96, '#c8402f');
+
+  /* 头部：鸣人 */
+  const introA = baseA * (1 - smoothstep(45.8, 46.4, t)) * smoothstep(43.6, 45.2, t);
+  if (introA > .001) {
+    ctx.save();
+    ctx.globalAlpha = introA;
+    tracked('FOCUS / 一个人', x + 34, y + 46, `500 9.5px ${F.sans}`, 'rgba(200,198,192,.55)', 2.6, 1, 'left');
+    const n = BY_ID.get('naruto');
+    drawAvatarInCard(n, x + 82, y + 126, 42, introA);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'rgba(232,230,227,.96)';
+    ctx.font = `600 30px ${F.serif}`;
+    ctx.fillText(n.name, x + 142, y + 104);
+    ctx.fillStyle = '#c8402f';
+    ctx.font = `600 36px ${F.serif}`;
+    ctx.fillText(n.ep, x + 142, y + 148);
+    ctx.fillStyle = 'rgba(180,180,188,.72)';
+    ctx.font = `400 11.5px ${F.sans}`;
+    ctx.fillText('七代目火影 · 九尾人柱力', x + 144, y + 180);
+
+    ctx.strokeStyle = 'rgba(255,255,255,.08)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x + 34, y + 214); ctx.lineTo(x + w - 34, y + 214); ctx.stroke();
+
+    ctx.fillStyle = 'rgba(232,230,227,.85)';
+    ctx.font = `400 17px ${F.serif}`;
+    const lines = wrap('他的力量，几乎都来自别人。', `400 17px ${F.serif}`, w - 68);
+    lines.forEach((l, i) => ctx.fillText(l, x + 34, y + 260 + i * 30));
+
+    ctx.fillStyle = 'rgba(180,180,188,.58)';
+    ctx.font = `400 11.5px ${F.sans}`;
+    ctx.fillText('13 条关系 / 12 个人 / 一个都不能少', x + 34, y + 556);
+    ctx.restore();
+  }
+
+  /* 头部小条：始终显示鸣人名字 */
+  if (t > 46.4) {
+    ctx.save();
+    ctx.globalAlpha = baseA * .72;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'rgba(232,230,227,.72)';
+    ctx.font = `500 12px ${F.sans}`;
+    ctx.fillText('漩涡鸣人 / 说到做到', x + 34, y + 46);
+    ctx.strokeStyle = 'rgba(255,255,255,.07)';
+    ctx.beginPath(); ctx.moveTo(x + 34, y + 70); ctx.lineTo(x + w - 34, y + 70); ctx.stroke();
+    ctx.restore();
+  }
+
+  /* 四段关系 */
+  for (const b of FOCUS_BEATS) {
+    const a = smoothstep(b.start, b.start + .35, t) * (1 - smoothstep(b.end - .35, b.end, t));
+    if (a <= .001) continue;
+    const n = BY_ID.get(b.id);
+    if (!n) continue;
+    const rel = LINKS.find(e => (e.a === 'naruto' && e.b === b.id) || (e.a === b.id && e.b === 'naruto'));
+    const rc = rel ? (REL[rel.type] || REL.bond).color : '#c8402f';
+
+    ctx.save();
+    ctx.globalAlpha = a * baseA;
+
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = rgba(rc, .95);
+    ctx.font = `500 11px ${F.sans}`;
+    ctx.fillText('关系 0' + (FOCUS_BEATS.indexOf(b) + 1) + ' — ' + b.tag, x + 34, y + 112);
+
+    drawAvatarInCard(n, x + 82, y + 190, 40, 1);
+
+    ctx.fillStyle = 'rgba(232,230,227,.96)';
+    ctx.font = `600 32px ${F.serif}`;
+    ctx.fillText(n.name, x + 142, y + 172);
+
+    ctx.fillStyle = '#c8402f';
+    ctx.font = `600 30px ${F.serif}`;
+    ctx.fillText(n.ep, x + 142, y + 214);
+
+    ctx.fillStyle = 'rgba(180,180,188,.62)';
+    ctx.font = `400 11px ${F.sans}`;
+    ctx.fillText(n.title, x + 142, y + 246);
+
+    ctx.strokeStyle = 'rgba(255,255,255,.08)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x + 34, y + 286); ctx.lineTo(x + w - 34, y + 286); ctx.stroke();
+
+    ctx.fillStyle = 'rgba(232,230,227,.94)';
+    ctx.font = `600 22px ${F.serif}`;
+    ctx.fillText(rel ? rel.emo : b.mark, x + 34, y + 330);
+
+    const qf = `400 19px ${F.serif}`;
+    ctx.fillStyle = 'rgba(232,230,227,.78)';
+    ctx.font = qf;
+    const lines = wrap('「' + b.quote + '」', qf, w - 68);
+    lines.forEach((l, i) => ctx.fillText(l, x + 34, y + 386 + i * 32));
+
+    /* 情感浓度 */
+    const heat = rel ? rel.heat : n.heat;
+    ctx.fillStyle = 'rgba(180,180,188,.6)';
+    ctx.font = `400 10.5px ${F.sans}`;
+    ctx.fillText('情感浓度', x + 34, y + 520);
+    ctx.fillStyle = rgba(rc, .9);
+    ctx.font = `600 12px ${F.sans}`;
+    ctx.fillText(String(heat), x + 34 + 72, y + 520);
+    ctx.fillStyle = 'rgba(255,255,255,.08)';
+    ctx.fillRect(x + 34, y + 538, w - 68, 2);
+    ctx.fillStyle = rgba(rc, .9);
+    ctx.fillRect(x + 34, y + 538, (w - 68) * heat / 100 * a, 2);
+
+    ctx.restore();
+  }
+}
+
+function drawAvatarInCard(n, x, y, r, alpha) {
+  const im = IMGS[n.id];
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.clip();
+  if (im) ctx.drawImage(im, x - r, y - r, r * 2, r * 2);
+  else { ctx.fillStyle = '#222'; ctx.fillRect(x - r, y - r, r * 2, r * 2); }
+  ctx.restore();
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, TAU);
+  ctx.strokeStyle = rgba(factionColor(n), .8);
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawEmoHUD(t) {
+  const k = emoAmount(t);
+  if (k <= .001) return;
+  ctx.save();
+  ctx.globalAlpha = k;
+
+  tracked('EMOTION / 情感镜头', 960, 84, `500 9.5px ${F.sans}`, 'rgba(200,198,192,.45)', 3, 1, 'center');
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'rgba(232,230,227,.9)';
+  ctx.font = `500 40px ${F.serif}`;
+  ctx.fillText('线越粗，情感越重', 960, 138);
+
+  /* 七种驱动力：只留名字与人数，避免底部拥挤 */
+  const itemW = 180;
+  const startX = 960 - itemW * 7 / 2;
+  const spot = spotAt(t);
+  const focusDrive = spot ? BY_ID.get(spot.s.id).drive : null;
+
+  tracked('七种驱动力', 960, 906, `500 9px ${F.sans}`, 'rgba(200,198,192,.40)', 2.8, 1, 'center');
+  ctx.strokeStyle = 'rgba(255,255,255,.055)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(startX + 10, 932); ctx.lineTo(startX + itemW * 7 - 10, 932); ctx.stroke();
+
+  DRIVE_ORDER.forEach((key, i) => {
+    const d = DRIVES[key];
+    const cnt = NODES.filter(n => n.drive === key).length;
+    const x = startX + i * itemW + itemW / 2;
+    const active = key === focusDrive;
+    const fs = active ? 14 : 12.5;
+    ctx.globalAlpha = k * (active ? 1 : .58);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.font = `500 ${fs}px ${F.sans}`;
+    const nw = ctx.measureText(d.name).width;
+    const total = 11 + nw + 8 + 13;
+    let cx = x - total / 2;
+
+    ctx.fillStyle = d.color;
+    ctx.beginPath(); ctx.arc(cx + 3, 962, 3.2, 0, TAU); ctx.fill();
+
+    ctx.fillStyle = active ? '#e8e6e3' : 'rgba(200,198,192,.82)';
+    ctx.fillText(d.name, cx + 11, 962);
+
+    ctx.font = `400 10px ${F.sans}`;
+    ctx.fillStyle = rgba(d.color, active ? .9 : .55);
+    ctx.fillText(String(cnt), cx + 11 + nw + 8, 962);
+  });
+
+  ctx.restore();
+}
+
+function drawSpotCard(t) {
+  const spot = spotAt(t);
+  if (!spot) return;
+  const n = BY_ID.get(spot.s.id);
+  if (!n) return;
+  const p = nodePos(n, focusAmount(t));
+  const screen = toScreen(p, cameraAt(t));
+
+  const x = 1150, y = 690, w = 650, h = 250;
+  const a = spot.k;
+
+  /* 引线 */
+  ctx.save();
+  ctx.globalAlpha = a * .6;
+  ctx.strokeStyle = rgba(driveColor(n), .75);
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(screen.x + 30, screen.y + 10);
+  ctx.bezierCurveTo(screen.x + 90, screen.y + 60, x - 30, y + 40, x, y + 40);
+  ctx.stroke();
+  ctx.restore();
+
+  panel(x, y, w, h, a * .96, driveColor(n));
+
+  ctx.save();
+  ctx.globalAlpha = a;
+  drawAvatarInCard(n, x + 78, y + 98, 44, 1);
+
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'rgba(232,230,227,.96)';
+  ctx.font = `600 28px ${F.serif}`;
+  ctx.fillText(n.name, x + 142, y + 70);
+
+  ctx.fillStyle = '#c8402f';
+  ctx.font = `600 42px ${F.serif}`;
+  ctx.fillText(n.ep, x + 142, y + 116);
+
+  ctx.fillStyle = rgba(driveColor(n), .95);
+  ctx.font = `500 11.5px ${F.sans}`;
+  ctx.fillText((DRIVES[n.drive] || DRIVES.protect).name + ' · 情感浓度 ' + n.heat, x + 142, y + 150);
+
+  ctx.fillStyle = 'rgba(232,230,227,.72)';
+  ctx.font = `400 16px ${F.serif}`;
+  ctx.fillText(spot.s.line, x + 38, y + 196);
+
+  ctx.fillStyle = 'rgba(255,255,255,.08)';
+  ctx.fillRect(x + 38, y + 220, w - 76, 2);
+  ctx.fillStyle = rgba(driveColor(n), .9);
+  ctx.fillRect(x + 38, y + 220, (w - 76) * n.heat / 100, 2);
+
+  ctx.restore();
+}
+
+function toScreen(p, cam) {
+  return {
+    x: 960 + (p.x - cam.x) * cam.s,
+    y: 540 + (p.y - cam.y) * cam.s
+  };
+}
+
+const MAJOR_EVENTS = new Set([0, 3, 4, 7, 12, 14, 17, 24]);
+const ERA_ORDER = ['序章', '第一部', '疾风传', '忍界大战', '新时代'];
+
+function drawTimeline(t) {
+  const e = eventAmount(t);
+  if (e <= .001) return;
+
+  const x0 = 230, x1 = 1690, y = 842;
+  const drawK = smoothstep(78.4, 79.8, t);
+  const sweepK = smoothstep(79.6, 85.2, t);
+  const sx = lerp(x0, x1, sweepK);
+
+  ctx.save();
+  ctx.globalAlpha = e;
+
+  /* 年表用一条暗带压住底图，避免标签和头像打架 */
+  const band = ctx.createLinearGradient(0, 560, 0, 1080);
+  band.addColorStop(0, 'rgba(7,7,8,0)');
+  band.addColorStop(.26, 'rgba(7,7,8,.72)');
+  band.addColorStop(.46, 'rgba(7,7,8,.95)');
+  band.addColorStop(1, 'rgba(7,7,8,.99)');
+  ctx.fillStyle = band;
+  ctx.fillRect(0, 560, W, 520);
+
+  /* 标题 */
+  tracked('EVENTS / 25 MOMENTS', 230, 146, `500 9.5px ${F.sans}`, 'rgba(200,198,192,.40)', 3, 1, 'left');
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'rgba(232,230,227,.96)';
+  ctx.font = `600 64px ${F.serif}`;
+  ctx.fillText('25', 230, 202);
+  ctx.font = `500 30px ${F.serif}`;
+  ctx.fillStyle = 'rgba(232,230,227,.72)';
+  ctx.fillText('个瞬间', 310, 214);
+
+  ctx.font = `400 15px ${F.serif}`;
+  ctx.fillStyle = 'rgba(180,180,188,.62)';
+  ctx.fillText('改写了 37 个人的关系。', 230, 262);
+
+  /* 基线 */
+  ctx.strokeStyle = 'rgba(255,255,255,.18)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(lerp(x0, x1, drawK), y); ctx.stroke();
+
+  /* 已经扫过的部分 */
+  if (sweepK > 0) {
+    ctx.strokeStyle = 'rgba(200,64,47,.62)';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(sx, y); ctx.stroke();
+  }
+
+  /* 时代分组 */
+  const eras = ERA_ORDER.map(name => ({
+    name,
+    items: EVENTS.filter(ev => ev.era === name)
+  })).filter(g => g.items.length);
+
+  let cursor = 0;
+  for (const g of eras) {
+    const startIdx = cursor;
+    const endIdx = cursor + g.items.length - 1;
+    cursor += g.items.length;
+    const gx0 = lerp(x0, x1, startIdx / 24) - 16;
+    const gx1 = lerp(x0, x1, endIdx / 24) + 16;
+    ctx.strokeStyle = 'rgba(255,255,255,.12)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(gx0, y + 34); ctx.lineTo(gx0, y + 42);
+    ctx.lineTo(gx1, y + 42); ctx.lineTo(gx1, y + 34);
+    ctx.stroke();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'rgba(200,198,192,.62)';
+    ctx.font = `400 11px ${F.sans}`;
+    ctx.fillText(g.name + '  ' + g.items.length, (gx0 + gx1) / 2, y + 60);
+  }
+
+  /* 25 个菱形 */
+  EVENTS.forEach((ev, i) => {
+    const x = lerp(x0, x1, i / 24);
+    const passed = x <= sx + 2;
+    const major = MAJOR_EVENTS.has(i);
+    const s = major ? 7.5 : 4.7;
+    const pop = passed ? 1 : .72;
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(Math.PI / 4);
+    if (passed) {
+      ctx.fillStyle = major ? '#c8402f' : 'rgba(200,64,47,.70)';
+      ctx.shadowColor = 'rgba(200,64,47,.65)';
+      ctx.shadowBlur = major ? 15 : 6;
+    } else {
+      ctx.fillStyle = 'rgba(120,120,130,.42)';
+      ctx.shadowBlur = 0;
+    }
+    ctx.fillRect(-s * pop / 2, -s * pop / 2, s * pop, s * pop);
+    ctx.restore();
+
+    if (major && passed) {
+      const lx = clamp(x, x0 + 16, x1 - 20);
+      const la = smoothstep(0, .4, (sx - x) / 36);
+      const ly = y - 30;
+
+      ctx.save();
+      ctx.globalAlpha = e * la;
+      ctx.strokeStyle = 'rgba(200,64,47,.30)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, y - 10);
+      ctx.lineTo(lx, ly + 8);
+      ctx.stroke();
+
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = 'rgba(232,230,227,.88)';
+      ctx.font = `500 11px ${F.sans}`;
+      ctx.fillText(ev.s, lx, ly);
+      ctx.restore();
+    }
+  });
+
+  /* 当前的大事件读数 */
+  let mi = -1;
+  for (const idx of MAJOR_EVENTS) {
+    const mx = lerp(x0, x1, idx / 24);
+    if (mx <= sx + 2) mi = idx;
+  }
+  if (mi >= 0) {
+    const ev = EVENTS[mi];
+    const mx = lerp(x0, x1, mi / 24);
+    const ta = smoothstep(0, .4, (sx - mx) / 36);
+    if (ta > .001) {
+      ctx.save();
+      ctx.globalAlpha = e * ta;
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+
+      ctx.fillStyle = 'rgba(200,64,47,.9)';
+      ctx.font = `500 10px ${F.sans}`;
+      ctx.fillText('EVENT ' + String(ev.no).padStart(2, '0') + ' / 25', 230, 948);
+
+      ctx.fillStyle = 'rgba(232,230,227,.95)';
+      ctx.font = `600 27px ${F.serif}`;
+      ctx.fillText(ev.name, 230, 984);
+      const nw = ctx.measureText(ev.name).width;
+
+      ctx.fillStyle = 'rgba(180,180,188,.62)';
+      ctx.font = `400 11px ${F.sans}`;
+      ctx.fillText(ev.vol + ' · ' + ev.era, 230 + nw + 18, 988);
+
+      const cf = `400 13px ${F.serif}`;
+      ctx.fillStyle = 'rgba(200,198,192,.62)';
+      ctx.font = cf;
+      const lines = wrap(ev.changed, cf, 1430);
+      lines.slice(0, 2).forEach((l, i) => ctx.fillText(l, 230, 1022 + i * 21));
+      ctx.restore();
+    }
+  }
+
+  /* 扫描头 */
+  if (sweepK > 0 && sweepK < 1) {
+    ctx.strokeStyle = 'rgba(232,230,227,.32)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(sx, y - 22); ctx.lineTo(sx, y + 22); ctx.stroke();
+    const g = ctx.createRadialGradient(sx, y, 0, sx, y, 26);
+    g.addColorStop(0, 'rgba(200,64,47,.55)');
+    g.addColorStop(1, 'rgba(200,64,47,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(sx, y, 26, 0, TAU); ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+function drawEndCard(t) {
+  const e = smoothstep(86.2, 87.0, t) * (1 - smoothstep(89.2, 90, t));
+  if (e <= .001) return;
+
+  ctx.save();
+  ctx.globalAlpha = e;
+  ctx.fillStyle = '#060607';
+  ctx.fillRect(0, 0, W, H);
+
+  const glow = ctx.createRadialGradient(960, 460, 60, 960, 520, 820);
+  glow.addColorStop(0, 'rgba(38,30,20,.62)');
+  glow.addColorStop(.55, 'rgba(15,13,10,.55)');
+  glow.addColorStop(1, 'rgba(6,6,7,1)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, H);
+
+  const cp = CREST_PATHS.konoha;
+  if (cp && cp.line) {
+    ctx.save();
+    ctx.translate(960, 470);
+    ctx.rotate(-0.08);
+    const s = 520 / 24;
+    ctx.scale(s, s);
+    ctx.translate(-12, -12);
+    ctx.strokeStyle = 'rgba(214,166,96,.055)';
+    ctx.lineWidth = 0.07;
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.stroke(cp.line);
+    ctx.restore();
+  }
+
+  tracked('NARUTO — A RELATIONSHIP MAP', 960, 320, `500 10px ${F.sans}`, 'rgba(200,198,192,.48)', 3.4, 1, 'center');
+
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'rgba(232,230,227,.97)';
+  ctx.font = `600 104px ${F.serif}`;
+  ctx.fillText('一张网', 930, 470);
+
+  drawSeal(1218, 430, 92, '网', e * (0.85 + 0.15 * Math.sin(t * 2)), -0.06);
+
+  ctx.fillStyle = 'rgba(200,64,47,.7)';
+  ctx.fillRect(730, 552, 400, 1.2);
+
+  ctx.fillStyle = 'rgba(232,230,227,.82)';
+  ctx.font = `400 22px ${F.serif}`;
+  ctx.fillText('火影忍者 · 人物关系图谱', 960, 606);
+
+  tracked('37 位角色 · 60 条关系 · 99 条名言 · 25 个名场面', 960, 666, `400 12px ${F.sans}`, 'rgba(180,180,188,.68)', 2.2, 1, 'center');
+
+  ctx.fillStyle = 'rgba(200,64,47,.9)';
+  ctx.font = `500 13px ${F.sans}`;
+  ctx.fillText('kyuubi.pages.dev', 960, 726);
+
+  /* 底部 37 个头像 */
+  const gap = 42;
+  const total = (NODES.length - 1) * gap;
+  const startX = 960 - total / 2;
+  NODES.forEach((n, i) => {
+    const a = smoothstep(86.6 + i * .035, 87.4 + i * .035, t);
+    if (a <= 0) return;
+    const x = startX + i * gap;
+    const im = IMGS[n.id];
+    ctx.save();
+    ctx.globalAlpha = e * a * .72;
+    ctx.beginPath(); ctx.arc(x, 840, 15, 0, TAU); ctx.clip();
+    if (im) ctx.drawImage(im, x - 15, 840 - 15, 30, 30);
+    ctx.restore();
+    ctx.save();
+    ctx.globalAlpha = e * a * .6;
+    ctx.beginPath(); ctx.arc(x, 840, 15, 0, TAU);
+    ctx.strokeStyle = rgba(factionColor(n), .75);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+  });
+
+  ctx.fillStyle = 'rgba(180,180,188,.35)';
+  ctx.font = `400 9.5px ${F.sans}`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(' PERSONAL FAN PROJECT · NOT AFFILIATED WITH THE OFFICIAL SERIES', 960, 920);
+
+  ctx.restore();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   8. 总装
+   ══════════════════════════════════════════════════════════════════ */
+function render(t) {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.clearRect(0, 0, W, H);
+
+  drawBackground(t);
+
+  const cam = cameraAt(t);
+  ctx.save();
+  ctx.translate(W / 2, H / 2);
+  ctx.scale(cam.s, cam.s);
+  ctx.translate(-cam.x, -cam.y);
+  drawGraph(t);
+  ctx.restore();
+
+  drawIntro(t);
+  drawGraphCaption(t);
+  drawLens(t);
+  drawFocusCard(t);
+  drawEmoHUD(t);
+  drawSpotCard(t);
+  drawTimeline(t);
+  drawEndCard(t);
+  drawChapter(t);
+
+  /* 开场与收尾的黑场 */
+  const blackIn = 1 - smoothstep(0, 1.1, t);
+  const blackOut = smoothstep(89.25, 90, t);
+  const blackDip = smoothstep(85.75, 86.15, t) * (1 - smoothstep(86.25, 86.7, t));
+  const black = Math.max(blackIn, blackOut, blackDip);
+  if (black > 0) {
+    ctx.save();
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = `rgba(5,5,6,${black})`;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+  }
+}
+
+window.__renderFrame = t => { render(t); return true; };
+window.__duration = DUR;
+
+/* ══════════════════════════════════════════════════════════════════
+   9. 启动
+   ══════════════════════════════════════════════════════════════════ */
+(async function boot() {
+  buildCrestPaths();
+  buildBackground();
+  buildDust();
+  await loadImages();
+  try {
+    await document.fonts.load(`600 40px ${F.serif}`);
+    await document.fonts.load(`500 16px ${F.sans}`);
+    await document.fonts.ready;
+  } catch (e) { /* 字体加载失败就退回系统字体 */ }
+
+  render(0);
+  window.__ready = true;
+  window.__renderFrame = t => { render(t); return true; };
+})();
+
+})();
+</script>
+</body>
+</html>

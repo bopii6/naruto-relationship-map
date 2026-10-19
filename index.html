@@ -126,6 +126,10 @@
 
   /* ── 侧栏 ── */
   .hud-left{top:100px;left:18px;width:206px;padding:15px;display:flex;flex-direction:column;gap:16px;max-height:calc(100vh - 186px);overflow:auto}
+  .hud-left::-webkit-scrollbar,.hud-right::-webkit-scrollbar{width:8px}
+  .hud-left::-webkit-scrollbar-track,.hud-right::-webkit-scrollbar-track{background:transparent}
+  .hud-left::-webkit-scrollbar-thumb,.hud-right::-webkit-scrollbar-thumb{background:rgba(255,255,255,.10);border-radius:8px}
+  .hud-left::-webkit-scrollbar-thumb:hover,.hud-right::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.18)}
   .hud-left h2{margin:0 0 8px;font-size:9.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
   .chips{display:flex;flex-wrap:wrap;gap:5px}
   .chip{
@@ -313,6 +317,100 @@
   .qov-pick .qov-card{background:rgba(200,64,47,.07);border-color:rgba(200,64,47,.28)}
   .qov-empty{padding:60px 0;text-align:center;color:var(--muted);font-size:12.5px}
 
+  /* ── 影片《一张网》 ── */
+  .film-mini{
+    display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 11px;border-radius:9px;cursor:pointer;
+    border:1px solid rgba(200,64,47,.48);background:rgba(200,64,47,.13);color:#ffd6cd;
+    font-family:var(--sans);font-size:11.5px;flex:0 0 auto;white-space:nowrap;
+    transition:all 160ms var(--ease);
+  }
+  .film-mini:hover{background:rgba(200,64,47,.25);border-color:rgba(200,64,47,.8);color:#fff}
+  .film-mini .fm-play{font-size:9px;line-height:1}
+  .film-fab{
+    display:none;position:fixed;z-index:6;top:78px;right:14px;align-items:center;gap:6px;
+    height:34px;padding:0 13px;border-radius:999px;cursor:pointer;
+    border:1px solid rgba(200,64,47,.55);background:rgba(20,14,13,.9);color:#ffd6cd;
+    font-family:var(--sans);font-size:11.5px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    box-shadow:0 8px 24px rgba(0,0,0,.5);transition:all 160ms var(--ease);
+  }
+  .film-fab:hover{background:rgba(200,64,47,.22);color:#fff}
+  .film-fab .fm-play{font-size:9px}
+  .film-entry{
+    display:flex;align-items:center;gap:11px;width:100%;padding:10px 11px;border-radius:11px;cursor:pointer;
+    text-align:left;border:1px solid rgba(200,64,47,.38);
+    background:linear-gradient(135deg,rgba(200,64,47,.19),rgba(200,64,47,.055));
+    color:#f2e8e4;font-family:var(--sans);transition:all 180ms var(--ease);
+  }
+  .film-entry:hover{border-color:rgba(200,64,47,.76);background:linear-gradient(135deg,rgba(200,64,47,.28),rgba(200,64,47,.09))}
+  .fe-play{
+    width:32px;height:32px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;
+    background:var(--seal);color:#fff;font-size:10px;padding-left:2px;
+    box-shadow:0 0 18px rgba(200,64,47,.48),inset 0 0 0 1px rgba(255,235,220,.25);
+  }
+  .fe-txt{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1 1 auto}
+  .fe-txt b{font-family:var(--serif);font-size:14px;font-weight:600;letter-spacing:.08em}
+  .fe-txt i{font-style:normal;font-size:9.5px;letter-spacing:.09em;color:#c7b3ad;white-space:nowrap}
+  .fe-arrow{font-size:12px;color:#d9a79c;flex:0 0 auto}
+  .empty-film{
+    display:flex;align-items:center;justify-content:center;gap:9px;width:100%;margin-top:18px;padding:10px 12px;
+    border-radius:10px;cursor:pointer;border:1px solid rgba(200,64,47,.42);
+    background:rgba(200,64,47,.12);color:#ffd6cd;font-family:var(--sans);font-size:11.5px;
+    transition:all 160ms var(--ease);
+  }
+  .empty-film:hover{background:rgba(200,64,47,.24);border-color:rgba(200,64,47,.72);color:#fff}
+  .empty-film span{font-size:9px}
+
+  .film{
+    position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;
+    padding:28px;background:rgba(4,4,6,.92);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  }
+  .film.on{display:flex}
+  .film-box{width:min(1260px,calc(100vw - 56px));max-width:100%;min-width:0;max-height:calc(100vh - 56px);display:flex;flex-direction:column}
+  .film-top{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:12px}
+  .film-kicker{font-size:9px;letter-spacing:.28em;color:rgba(200,198,192,.48);margin-bottom:5px}
+  .film-title{
+    margin:0;font-family:var(--serif);font-size:31px;font-weight:600;letter-spacing:.08em;color:#f2efeb;
+    display:flex;align-items:baseline;gap:12px;
+  }
+  .film-title span{font-family:var(--sans);font-size:12px;font-weight:400;letter-spacing:.12em;color:#9a9aa2}
+  .film-close{
+    flex:0 0 auto;height:34px;padding:0 13px;border-radius:9px;cursor:pointer;
+    border:1px solid var(--line);background:rgba(255,255,255,.05);color:#c9c8cf;
+    font-family:var(--sans);font-size:12px;transition:all 160ms var(--ease);
+  }
+  .film-close:hover{background:rgba(255,255,255,.11);color:#fff}
+  .film-frame{
+    position:relative;min-width:0;border-radius:14px;overflow:hidden;background:#000;
+    border:1px solid rgba(255,255,255,.12);box-shadow:0 30px 90px rgba(0,0,0,.72);
+  }
+  .film-frame video{display:block;width:100%;max-width:100%;aspect-ratio:16/9;background:#000;object-fit:contain}
+  .film-playbtn{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;
+    width:76px;height:76px;border-radius:50%;border:0;cursor:pointer;
+    background:rgba(200,64,47,.94);color:#fff;font-size:22px;padding-left:4px;
+    box-shadow:0 0 0 10px rgba(200,64,47,.14),0 18px 50px rgba(0,0,0,.55);
+    transition:transform 200ms var(--ease),background 200ms var(--ease),opacity 200ms var(--ease);
+  }
+  .film-playbtn:hover{transform:translate(-50%,-50%) scale(1.06);background:#d94a37}
+  .film-playbtn[hidden]{display:none}
+  .film-meta{
+    display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:12px;
+    font-size:11px;line-height:1.7;color:#85858e;
+  }
+  .film-meta b{color:#cfcdc7;font-weight:500}
+  .film-meta a{color:#e08d7f;text-decoration:none;border-bottom:1px solid rgba(224,141,127,.35)}
+  .film-meta a:hover{color:#ffb3a4}
+  .film-fallback{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:30px;text-align:center;
+    background:rgba(8,8,10,.94);color:#c9c7c2;font-size:12.5px;line-height:1.8;
+  }
+  .film-fallback[hidden]{display:none}
+  .film-fallback code{color:#e0cf9f;font-size:11.5px}
+  @media (max-height:820px){
+    .film-box{width:min(1260px,calc((100vh - 190px) * 1.7778))}
+  }
+
   /* ── 名场面 · 年表 ── */
   .ev-era{margin:0 0 22px}
   .ev-era > h4{
@@ -378,6 +476,40 @@
   .d-evrow .dia{flex:0 0 auto;width:7px;height:7px;transform:rotate(45deg);background:var(--seal);opacity:.85}
   .d-evrow .v{margin-left:auto;font-size:9.5px;color:#72727a;font-variant-numeric:tabular-nums}
 
+  /* ── 忍术 · 排行 ── */
+  .ju-row{
+    display:grid;grid-template-columns:44px minmax(0,1fr) 104px;gap:14px;align-items:start;
+    margin:0 0 8px;padding:11px 15px;border-radius:11px;
+    background:rgba(255,255,255,.035);border:1px solid var(--line);
+    color:#d5d3d0;
+    transition:background 150ms var(--ease),border-color 150ms var(--ease);
+  }
+  .ju-row.pick{background:rgba(200,64,47,.08);border-color:rgba(200,64,47,.35)}
+  .ju-rank{font-family:var(--serif);font-size:19px;font-weight:600;color:#5c5c64;font-variant-numeric:tabular-nums;line-height:1.3;text-align:right}
+  .ju-top3 .ju-rank{color:var(--seal)}
+  .ju-name{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .ju-name b{font-family:var(--serif);font-size:14.5px;font-weight:600;letter-spacing:.03em;color:#f0eeeb}
+  .ju-type{padding:1.5px 7px;border-radius:5px;font-size:9.5px;letter-spacing:.12em}
+  .ju-note{margin:6px 0 0;font-size:11px;line-height:1.75;color:#8f8e96;text-wrap:pretty}
+  .ju-people{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+  .ju-power{text-align:right}
+  .ju-power b{font-family:var(--serif);font-size:16px;color:#e8e6e3;font-variant-numeric:tabular-nums}
+  .ju-power i{display:block;height:3px;border-radius:3px;margin-top:6px;background:rgba(255,255,255,.08)}
+  .ju-power i span{display:block;height:100%;border-radius:3px;background:var(--seal);opacity:.75}
+  .ju-power span{display:block;margin-top:5px;font-size:9px;color:#6f6f77;letter-spacing:.1em}
+  .ju-empty{padding:60px 0;text-align:center;color:var(--muted);font-size:12.5px}
+
+  /* 详情面板里的招牌忍术清单 */
+  .d-jurow{
+    display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:9px;cursor:pointer;text-align:left;
+    background:rgba(255,255,255,.035);border:1px solid var(--line);
+    color:#d5d3d0;font-family:var(--sans);font-size:11px;
+    transition:background 140ms var(--ease);
+  }
+  .d-jurow:hover{background:rgba(255,255,255,.08)}
+  .d-jurow .jt{flex:0 0 auto;width:7px;height:7px;border-radius:2px}
+  .d-jurow .v{margin-left:auto;font-size:9.5px;color:#72727a;font-variant-numeric:tabular-nums}
+
   .hud-bottom{
     bottom:18px;left:50%;transform:translateX(-50%);padding:7px 16px;display:flex;align-items:center;gap:12px;
     font-size:11px;color:var(--muted);white-space:nowrap;
@@ -402,7 +534,23 @@
 
   #navToggle{display:none}
 
-  @media (max-width:1180px){ .hud-right{width:262px} .brand .sub{display:none} }
+  @media (max-width:1180px){
+    .hud-right{width:262px}
+    .brand .sub{display:none}
+    .brand h1{display:none}
+    .brand{gap:6px}
+    .seal{width:32px;height:32px;font-size:17px}
+    .hud-top{gap:6px;padding:8px}
+    .tabs button{padding:7px 9px;font-size:0}
+    .tabs button::after{font-size:11px}
+    .tabs button[data-mode="focus"]::after{content:"聚焦"}
+    .tabs button[data-mode="zone"]::after{content:"分区"}
+    .tabs button[data-mode="gen"]::after{content:"分层"}
+    #lensTabs button{padding:7px 9px;font-size:11px}
+    #navToggle{padding:0 9px;font-size:11px}
+    .search-wrap{flex:0 1 90px;min-width:60px}
+    .film-mini{display:none}
+  }
   @media (max-width:960px){
     .hud-left{
       top:auto;bottom:62px;left:18px;right:18px;width:auto;max-height:42vh;
@@ -417,14 +565,20 @@
     }
     .hud-right{top:auto;bottom:62px;left:18px;right:18px;width:auto;max-height:38vh}
     .hud-bottom{display:none}
-    .tabs button{padding:7px 11px;font-size:12px}
+    .film-fab{display:inline-flex;top:70px;right:10px;height:32px;padding:0 11px;font-size:11px}
   }
   @media (max-width:700px){
-    .brand h1{font-size:13px}
-    .brand .sub{display:none}
-    .seal{width:32px;height:32px;font-size:17px}
-    .hud-top{gap:10px;padding:9px 11px}
-    .search-wrap{flex:1 1 60px;min-width:0}
+    .search-wrap{display:none}
+    .film{padding:64px 10px 10px;align-items:flex-start}
+    .film-box{width:100%;max-width:100%;min-width:0;max-height:none}
+    .film-top{align-items:center;margin-bottom:8px;gap:10px}
+    .film-kicker{display:none}
+    .film-title{font-size:20px;gap:8px}
+    .film-title span{font-size:10px}
+    .film-close{height:30px;padding:0 10px;font-size:11px}
+    .film-frame{border-radius:9px}
+    .film-playbtn{width:60px;height:60px;font-size:18px}
+    .film-meta{flex-direction:column;align-items:flex-start;gap:3px;margin-top:8px;font-size:10px}
   }
 </style>
 </head>
@@ -449,6 +603,9 @@
     <button type="button" role="tab" data-lens="struct"  aria-selected="true">结构</button>
     <button type="button" role="tab" data-lens="emotion" aria-selected="false">情感</button>
   </div>
+  <button id="btnFilmTop" class="film-mini" type="button" aria-haspopup="dialog" aria-label="看 90 秒影片《一张网》" title="看 90 秒影片（V）">
+    <span class="fm-play" aria-hidden="true">▶</span><span>90s</span>
+  </button>
   <div class="spacer"></div>
   <button id="navToggle" type="button">筛选</button>
   <div class="search-wrap">
@@ -457,7 +614,18 @@
   </div>
 </header>
 
+<button id="btnFilmFab" class="film-fab" type="button" aria-haspopup="dialog" aria-label="看 90 秒影片《一张网》">
+  <span class="fm-play" aria-hidden="true">▶</span><span>90s 影片</span>
+</button>
+
 <aside class="hud hud-left" id="leftPanel">
+  <section>
+    <button id="btnFilm" class="film-entry" type="button" aria-haspopup="dialog" aria-label="看 90 秒影片《一张网》">
+      <span class="fe-play" aria-hidden="true">▶</span>
+      <span class="fe-txt"><b>一张网</b><i>90 秒 · 动态讲解</i></span>
+      <span class="fe-arrow" aria-hidden="true">↗</span>
+    </button>
+  </section>
   <section>
     <h2>阵营 / 出身</h2>
     <div class="chips" id="factionList"></div>
@@ -483,6 +651,7 @@
     <div class="btns" style="margin-top:6px">
       <button id="btnEvents" type="button">名场面 · 年表</button>
       <button id="btnQuotes" type="button">名言 · 名场面</button>
+      <button id="btnJutsu" type="button">忍术 · 排行</button>
     </div>
   </section>
   <div class="hint">
@@ -522,6 +691,46 @@
       <button id="evClose" type="button" class="qov-btn">关闭</button>
     </div>
     <div class="qov-body" id="evBody"></div>
+  </div>
+</div>
+
+<div id="jutsuOverlay" class="qov" aria-hidden="true">
+  <div class="qov-panel" role="dialog" aria-modal="true" aria-label="忍术 · 排行">
+    <div class="qov-head">
+      <div class="qov-title"><b>忍术 · 排行</b><span id="juCount"></span></div>
+      <div class="qov-search">
+        <input id="juInput" type="search" placeholder="搜索忍术 / 使用者…" autocomplete="off" spellcheck="false">
+      </div>
+      <button id="juClose" type="button" class="qov-btn">关闭</button>
+    </div>
+    <div class="qov-themes" id="juChips"></div>
+    <div class="qov-body" id="juBody"></div>
+  </div>
+</div>
+
+<div id="filmOverlay" class="film" aria-hidden="true">
+  <div class="film-box" role="dialog" aria-modal="true" aria-labelledby="filmTitle">
+    <div class="film-top">
+      <div>
+        <div class="film-kicker">NARUTO — A RELATIONSHIP MAP / FILM 01</div>
+        <h2 class="film-title" id="filmTitle">一张网 <span>90 秒动态讲解</span></h2>
+      </div>
+      <button id="filmClose" class="film-close" type="button" aria-label="关闭影片">关闭 ✕</button>
+    </div>
+    <div class="film-frame">
+      <video id="filmVideo" controls playsinline preload="none"
+        poster="assets/video/one-web-poster.jpg">
+        <source src="assets/video/one-web-90s-web.mp4" type="video/mp4">
+      </video>
+      <button id="filmPlay" class="film-playbtn" type="button" aria-label="播放影片">▶</button>
+      <div id="filmFallback" class="film-fallback" hidden>
+        <span>影片文件没有找到。请确认 <code>assets/video/one-web-90s-web.mp4</code> 存在。</span>
+      </div>
+    </div>
+    <div class="film-meta">
+      <span><b>37 位角色 · 60 条关系 · 25 个名场面</b> · 无旁白，字幕与音乐叙事</span>
+      <span><a href="assets/video/one-web-90s-web.mp4" download>下载影片（720p）</a> · 数据来自本页图谱 · 不含原作动画片段</span>
+    </div>
   </div>
 </div>
 
@@ -635,6 +844,17 @@ const REL = {
   control: { name:'操控 / 利用', color:'#e0574f', dash:[2,5] }
 };
 const REL_ORDER = ['family','master','team','bond','rival','control'];
+
+/* 忍术类型（排行面板用） */
+const JTYPE = {
+  ninjutsu:  { name:'忍术', color:'#4f8ff7' },
+  taijutsu:  { name:'体术', color:'#57c785' },
+  genjutsu:  { name:'幻术', color:'#a277e8' },
+  dojutsu:   { name:'瞳术', color:'#ef5b52' },
+  forbidden: { name:'禁术', color:'#d9a441' },
+  sealing:   { name:'封印', color:'#7d8a99' }
+};
+const JTYPE_ORDER = ['ninjutsu','taijutsu','genjutsu','dojutsu','forbidden','sealing'];
 
 /* ══════════════════════════════════════════════════════════════════
    1.5 情感层
@@ -1393,6 +1613,91 @@ const LINKS = [
   ['danzo','itachi','control','灭族密令']
 ];
 
+const JUTSU = [
+  { id:'mugen', name:'无限月读', who:['madara'], type:'genjutsu', power:10,
+    note:'轮回写轮眼映上月亮，全世界各自陷入想要的梦。发动之后，忍界没有一个人能自己醒来。' },
+  { id:'kamui', name:'神威', who:['obito','kakashi'], type:'dojutsu', power:9.8,
+    note:'把自己或目标转移进异空间。打谁都打不着，想封印谁就封印谁，双眼齐用近乎无解。' },
+  { id:'susanoo', name:'须佐能乎', who:['madara','itachi','sasuke'], type:'dojutsu', power:9.6,
+    note:'查克拉凝成披甲巨人。完全体一剑劈开山脉，鼬的版本还带着封印一切的十拳剑。' },
+  { id:'hachimon', name:'八门遁甲 · 死门', who:['guy'], type:'taijutsu', power:9.6,
+    note:'以命换力的终点：夜凯一脚，把十尾人柱力形态的斑踢到半边身体崩解。' },
+  { id:'rasenshuriken', name:'风遁 · 螺旋手里剑', who:['naruto'], type:'ninjutsu', power:9.4,
+    note:'无数风刃把目标打伤到细胞层面。四代火影看过威力后，把它列为不许再用的禁术。' },
+  { id:'shinra', name:'神罗天征', who:['nagato'], type:'dojutsu', power:9.4,
+    note:'轮回眼的斥力在一瞬间推向四面八方——整个木叶村被这一击推成平地。' },
+  { id:'chibaku', name:'地爆天星', who:['nagato'], type:'dojutsu', power:9.3,
+    note:'造出一颗卫星，把目标连身体带查克拉一起封进石球。长门用它困住了六尾化的鸣人。' },
+  { id:'mokuton', name:'木遁 · 树界降诞', who:['hashirama'], type:'ninjutsu', power:9.3,
+    note:'凭空长出森林，森林之上再起大佛。柱间靠木遁平定战国、压制尾兽。' },
+  { id:'kotoamatsukami', name:'别天神', who:['shisui'], type:'genjutsu', power:9.3,
+    note:'在对方毫无察觉时改写他的意志——被控制的人，自己都不知道被控制了。' },
+  { id:'izanagi', name:'伊邪那岐', who:['obito','danzo'], type:'forbidden', power:9.2,
+    note:'把「自己的死」也变成幻觉，改写既成的现实。代价是一只写轮眼永远失去光明。' },
+  { id:'bijudama', name:'尾兽玉', who:['naruto'], type:'ninjutsu', power:9.2,
+    note:'尾兽的终极火力：阴阳查克拉压缩成一颗黑球，落点之处山头直接消失。' },
+  { id:'edo', name:'秽土转生', who:['tobirama','orochimaru'], type:'forbidden', power:9.2,
+    note:'把死者召回成查克拉无限、死不了的军队。忍界大战的走向，一半由这个术决定。' },
+  { id:'sennin', name:'仙人模式', who:['jiraiya','naruto'], type:'ninjutsu', power:9.1,
+    note:'吸收自然能量，感知、体术、忍术全面升档。妙木山蛤蟆仙道的入场券。' },
+  { id:'shiki', name:'尸鬼封尽', who:['minato','hiruzen'], type:'sealing', power:9.1,
+    note:'召出死神封走目标的灵魂，施术者同死。水门用它把九尾劈成两半，日斩用它封了大蛇丸的双手。' },
+  { id:'tsukuyomi', name:'月读', who:['itachi'], type:'genjutsu', power:8.9,
+    note:'幻术世界里的一秒等于现实的七十二小时。不碰身体，就能把精神整个击碎。' },
+  { id:'kirin', name:'麒麟', who:['sasuke'], type:'ninjutsu', power:8.9,
+    note:'借积雨云引来天上的真雷。无法防御、无法躲避，落点只有灰烬。' },
+  { id:'hiraishin', name:'飞雷神之术', who:['minato','tobirama'], type:'ninjutsu', power:8.9,
+    note:'留下术式即可瞬间移动。水门靠它拿到「黄色闪光」之名，九尾之夜救下全场。' },
+  { id:'amaterasu', name:'天照', who:['itachi','sasuke'], type:'dojutsu', power:8.9,
+    note:'视线所及燃起黑炎，不烧尽目标绝不熄灭。连火焰本身都能被它点着。' },
+  { id:'kagebunshin', name:'多重影分身之术', who:['naruto','tobirama'], type:'forbidden', power:8.8,
+    note:'每个分身都是实体，修炼经验还能带回本体。在鸣人手里，它既是军团也是外挂。' },
+  { id:'rasengan', name:'螺旋丸', who:['minato','jiraiya','naruto'], type:'ninjutsu', power:8.8,
+    note:'四代目花三年完成的无印 A 级忍术：纯查克拉的旋转球，打到谁谁飞。' },
+  { id:'sand', name:'沙缚 · 沙瀑送葬', who:['gaara'], type:'ninjutsu', power:8.8,
+    note:'守鹤的沙自动护主、自动绞杀。中忍考试时，没有人愿意站在他对面。' },
+  { id:'byakugou', name:'百豪 · 创造再生', who:['tsunade','sakura'], type:'sealing', power:8.7,
+    note:'把多年积蓄的查克拉一次放开：伤口即刻再生，怪力足以开山。' },
+  { id:'kamishiro', name:'神之纸片', who:['konan'], type:'ninjutsu', power:8.7,
+    note:'六千亿张起爆符铺成的海。小南用它差一点就杀掉了带土。' },
+  { id:'hyakki', name:'百机操演', who:['sasori'], type:'ninjutsu', power:8.6,
+    note:'一人同时操纵一百具傀儡。蝎自己说，这一手足以灭掉一个小国。' },
+  { id:'chidori', name:'雷切 · 千鸟', who:['kakashi','sasuke'], type:'ninjutsu', power:8.6,
+    note:'卡卡西少年时开发的雷遁突刺，快到需要写轮眼才敢用；佐助把它带上了终结之谷。' },
+  { id:'c4', name:'爆遁 · C4 迦楼罗', who:['deidara'], type:'ninjutsu', power:8.5,
+    note:'微型炸弹混进空气，吸入者从体内开始崩坏。艺术就是爆炸的最终注脚。' },
+  { id:'kongo', name:'金刚封锁', who:['kushina'], type:'sealing', power:8.4,
+    note:'漩涡一族的查克拉锁链，连完整状态的九尾都被它捆得动弹不得。' },
+  { id:'jiongu', name:'地怨虞', who:['kakuzu'], type:'ninjutsu', power:8.3,
+    note:'五颗心脏、五种查克拉属性，还能抢别人的心脏给自己续命。' },
+  { id:'daikoudan', name:'水遁 · 大鲛弹', who:['kisame'], type:'ninjutsu', power:8.2,
+    note:'会吞查克拉的巨鲨：对手的术越强，它吃得越饱、变得越大。' },
+  { id:'hakke64', name:'八卦六十四掌', who:['neji','hinata'], type:'taijutsu', power:8.0,
+    note:'六十四连掌封住全身查克拉穴道，让对方连一个印都结不出来。' },
+  { id:'mizukiri', name:'水遁 · 水断波', who:['tobirama'], type:'ninjutsu', power:8.0,
+    note:'在无水之地凭空造出高压水刃。二代目的水遁，不需要湖。' },
+  { id:'shishihyoketsu', name:'死司凭血', who:['hidan'], type:'forbidden', power:8.0,
+    note:'舔到对方的血就能诅咒其全身，自己受伤对方同样受伤。被砍掉头也照样活着。' },
+  { id:'urashisho', name:'里四象封印', who:['danzo'], type:'sealing', power:7.9,
+    note:'临死发动，把周围一切拖进黄泉的同归于尽封印。' },
+  { id:'renge', name:'里莲华', who:['lee'], type:'taijutsu', power:7.8,
+    note:'解开绷带后的高速连击。莲花只开两次，第三次的代价是肌肉自毁。' },
+  { id:'kagemane', name:'影子模仿 · 影缚术', who:['shikamaru'], type:'ninjutsu', power:7.8,
+    note:'影子被接上，身体就归对方指挥。战场上最聪明的定身术。' },
+  { id:'choudanjutsu', name:'倍化 · 蝶弹指', who:['choji'], type:'ninjutsu', power:7.6,
+    note:'把卡路里一口气转成查克拉。蝶弹指这一击，连须佐能乎的肋骨都打裂过。' },
+  { id:'kamaitachi', name:'风遁 · 镰鼬', who:['temari'], type:'ninjutsu', power:7.5,
+    note:'一扇掀起真空刃风暴，岩石和森林一起切碎。' },
+  { id:'housi', name:'胞子之术', who:['zetsu'], type:'ninjutsu', power:7.4,
+    note:'孢子附身吸取查克拉，几十年不被察觉。白绝军团就是这么种出来的。' },
+  { id:'shintenshin', name:'心转身之术', who:['ino'], type:'ninjutsu', power:7.2,
+    note:'精神离体，夺取对方的身体。打偏了，自己一时也回不来。' },
+  { id:'soryu', name:'双升龙', who:['tenten'], type:'ninjutsu', power:7.0,
+    note:'把万千忍具封进卷轴，空中双龙盘旋，一齐倾泻。' },
+  { id:'kugutsu', name:'傀儡术', who:['kankuro'], type:'ninjutsu', power:6.8,
+    note:'继承自蝎的乌鸦与黑蚁：机关连发，还能喷毒，是砂隐可靠的一手暗牌。' }
+];
+
 const GENS = [
   { id:'g1', main:'战国',    sub:'木叶创立',     cols:1 },
   { id:'g2', main:'三忍一代', sub:'日斩的弟子们', cols:2 },
@@ -1433,6 +1738,9 @@ const byId = new Map(nodes.map(n => [n.id, n]));
 
 /* 名场面的「当事人」：等 nodes 建好之后再挂（要用带动图的那些字段） */
 EVENTS.forEach(e => { e.people = e.who.map(id => byId.get(id)).filter(Boolean); });
+
+/* 忍术榜：数据里已按强度从高到低排好，rank 按顺序赋值，使用者同样挂成对象 */
+JUTSU.forEach((j, i) => { j.rank = i + 1; j.people = j.who.map(id => byId.get(id)).filter(Boolean); });
 
 const links = LINKS.map(a => {
   const e = EMO[a[0] + '|' + a[1] + '|' + a[2]] ||
@@ -2287,6 +2595,24 @@ function eventsHtml(id) {
   '</div>';
 }
 
+/* ── 忍术：人物面板里的招牌忍术清单 ── */
+function jutsuHtml(id) {
+  const list = JUTSU.filter(j => j.who.indexOf(id) >= 0);
+  if (!list.length) return '';
+  return '<div class="d-sec">' +
+    '<h3><span class="bar" style="background:var(--seal)"></span>招牌忍术 · ' + list.length + '</h3>' +
+    '<div class="d-evlist">' +
+      list.map(j => {
+        const t = JTYPE[j.type];
+        return '<button class="d-jurow" type="button" data-ju="' + j.id + '">' +
+          '<span class="jt" style="background:' + t.color + '"></span>' + j.name +
+          '<span class="v">#' + j.rank + ' · ' + j.power.toFixed(1) + '</span>' +
+        '</button>';
+      }).join('') +
+    '</div>' +
+  '</div>';
+}
+
 /* ── 名场面：选中之后右侧那张卡 ── */
 function renderEventCard(e) {
   detail.innerHTML =
@@ -2343,6 +2669,7 @@ function emptyPanel() {
         '<div><b>' + nodes.length + '</b><span>角色</span></div>' +
         '<div><b>' + links.length + '</b><span>关系</span></div>' +
       '</div>' +
+      '<button class="empty-film" type="button" data-film="1"><span aria-hidden="true">▶</span>看 90 秒影片《一张网》</button>' +
       '<div class="d-sec" style="text-align:left;margin-top:24px;padding-top:18px;border-top:1px solid var(--line)">' +
         '<h3><span class="bar" style="background:#e0483a"></span>情感浓度 TOP 4</h3>' +
         top.map(l =>
@@ -2433,6 +2760,7 @@ function renderDetail() {
     '<p class="d-note">' + p.note + '</p>' +
     quotesHtml(p.id) +
     eventsHtml(p.id) +
+    jutsuHtml(p.id) +
     relHtml +
     '<div class="d-acts">' +
       (inFocus
@@ -2445,6 +2773,8 @@ function renderDetail() {
     b.addEventListener('click', () => selectNode(b.dataset.id)));
   detail.querySelectorAll('.d-evrow').forEach(b =>
     b.addEventListener('click', () => selectEvent(b.dataset.ev)));
+  detail.querySelectorAll('.d-jurow').forEach(b =>
+    b.addEventListener('click', () => openJutsu(b.dataset.ju)));
   const bk = detail.querySelector('#dBack');
   if (bk) bk.addEventListener('click', () => { selId = null; setMode('zone', null, true); });
   const fc = detail.querySelector('#dFocus');
@@ -2574,7 +2904,7 @@ function updateHint() {
     zone:  '<b>分区视图</b> · 按阵营分块 · <b>点头像</b>进入聚焦',
     gen:   '<b>分层视图</b> · 从左到右＝时代推进 · <b>点头像</b>进入聚焦'
   }[mode];
-  hintBar.innerHTML = '<span>' + t + emo + '</span><span>滚轮缩放 · 拖空白平移 · <kbd>Esc</kbd> 返回 · <kbd>/</kbd> 搜索 · <kbd>Q</kbd> 名言 · <kbd>E</kbd> 名场面</span>';
+  hintBar.innerHTML = '<span>' + t + emo + '</span><span>滚轮缩放 · 拖空白平移 · <kbd>Esc</kbd> 返回 · <kbd>/</kbd> 搜索 · <kbd>Q</kbd> 名言 · <kbd>E</kbd> 名场面 · <kbd>R</kbd> 忍术 · <kbd>V</kbd> 影片</span>';
 }
 
 const searchEl = document.getElementById('search');
@@ -2640,12 +2970,21 @@ document.addEventListener('click', e => {
 });
 
 document.addEventListener('keydown', e => {
+  const filmEl = document.getElementById('filmOverlay');
+  if (filmEl && filmEl.classList.contains('on')) {
+    if (e.key === 'Escape') { e.preventDefault(); closeFilm(); }
+    return;
+  }
   if (quoteOv.classList.contains('on')) {
     if (e.key === 'Escape') { e.preventDefault(); closeQuotes(); }
     return;
   }
   if (eventOv.classList.contains('on')) {
     if (e.key === 'Escape') { e.preventDefault(); closeEvents(); }
+    return;
+  }
+  if (jutsuOv.classList.contains('on')) {
+    if (e.key === 'Escape') { e.preventDefault(); closeJutsu(); }
     return;
   }
   if (e.key === 'Escape') {
@@ -2661,6 +3000,12 @@ document.addEventListener('keydown', e => {
   } else if (e.key === 'e' && !e.ctrlKey && !e.metaKey && !e.altKey) {
     const tag = (document.activeElement && document.activeElement.tagName) || '';
     if (tag !== 'INPUT' && tag !== 'TEXTAREA') { e.preventDefault(); openEvents(); }
+  } else if (e.key === 'r' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    const tag = (document.activeElement && document.activeElement.tagName) || '';
+    if (tag !== 'INPUT' && tag !== 'TEXTAREA') { e.preventDefault(); openJutsu(); }
+  } else if (e.key === 'v' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    const tag = (document.activeElement && document.activeElement.tagName) || '';
+    if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'VIDEO') { e.preventDefault(); openFilm(); }
   }
 });
 
@@ -2899,6 +3244,176 @@ evInput.addEventListener('input', () => {
   evTimer = setTimeout(renderEvents, 120);
 });
 eventOv.addEventListener('click', e => { if (e.target === eventOv) closeEvents(); });
+
+/* ══════════════════════════════════════════════════════════════════
+   9.65 忍术 · 排行（全屏总览，从强到弱）
+   ══════════════════════════════════════════════════════════════════ */
+
+const jutsuOv = document.getElementById('jutsuOverlay');
+const juBody  = document.getElementById('juBody');
+const juInput = document.getElementById('juInput');
+const juCount = document.getElementById('juCount');
+const juChips = document.getElementById('juChips');
+
+const juTypeOn = {};
+JTYPE_ORDER.forEach(k => { juTypeOn[k] = true; });
+let juPick = null;            /* 从详情面板打开时要点亮的那一条 */
+
+JTYPE_ORDER.forEach(key => {
+  const t = JTYPE[key];
+  const n = JUTSU.filter(j => j.type === key).length;
+  const el = document.createElement('button');
+  el.type = 'button'; el.className = 'chip'; el.dataset.jtype = key;
+  el.setAttribute('aria-pressed', 'true');
+  el.innerHTML = '<span class="bar" style="background:' + t.color + '"></span>' + t.name + ' ' + n;
+  el.addEventListener('click', () => {
+    const others = JTYPE_ORDER.filter(x => x !== key);
+    const solo = juTypeOn[key] && others.every(x => !juTypeOn[x]);
+    JTYPE_ORDER.forEach(x => { juTypeOn[x] = solo ? true : (x === key); });
+    syncJuChips(); renderJutsu();
+  });
+  juChips.appendChild(el);
+});
+function syncJuChips() {
+  for (const el of juChips.children) el.setAttribute('aria-pressed', String(!!juTypeOn[el.dataset.jtype]));
+}
+
+function juRowHtml(j) {
+  const t = JTYPE[j.type];
+  return '<article class="ju-row' + (j.rank <= 3 ? ' ju-top3' : '') + (juPick === j.id ? ' pick' : '') + '" data-id="' + j.id + '">' +
+    '<span class="ju-rank">' + j.rank + '</span>' +
+    '<span>' +
+      '<span class="ju-name"><b>' + j.name + '</b>' +
+        '<span class="ju-type" style="color:' + t.color + ';background:' + hexA(t.color, .12) +
+          ';box-shadow:inset 0 0 0 1px ' + hexA(t.color, .3) + '">' + t.name + '</span></span>' +
+      '<p class="ju-note">' + j.note + '</p>' +
+      '<span class="ju-people">' +
+        j.people.map(n =>
+          '<button class="ev-p" type="button" data-id="' + n.id + '" style="--fc:' + FACTIONS[n.f].color + '" title="' + n.name + ' · ' + (n.ep || n.title) + '">' +
+            (n.av ? '<img src="' + n.av + '" alt="">' : '') + n.short +
+          '</button>').join('') +
+      '</span>' +
+    '</span>' +
+    '<span class="ju-power"><b>' + j.power.toFixed(1) + '</b>' +
+      '<i><span style="width:' + (j.power * 10) + '%"></span></i>' +
+      '<span>综合强度</span>' +
+    '</span>' +
+  '</article>';
+}
+
+function renderJutsu() {
+  const text = juInput.value.trim().toLowerCase();
+  const hit = j => juTypeOn[j.type] && (!text ||
+    j.name.toLowerCase().includes(text) ||
+    j.note.toLowerCase().includes(text) ||
+    j.people.some(n => n.name.toLowerCase().includes(text) ||
+      n.short.toLowerCase().includes(text) || (n.ep || '').includes(text)));
+
+  const rows = JUTSU.filter(hit);
+  juCount.textContent = rows.length + ' / ' + JUTSU.length + ' 门忍术';
+
+  if (!rows.length) {
+    juBody.innerHTML = '<div class="ju-empty">没有找到符合条件的忍术</div>';
+    return;
+  }
+  juBody.innerHTML = rows.map(juRowHtml).join('');
+
+  juBody.querySelectorAll('.ev-p').forEach(b =>
+    b.addEventListener('click', () => { closeJutsu(); selectNode(b.dataset.id); }));
+}
+
+function openJutsu(pickId) {
+  juPick = pickId || null;
+  jutsuOv.classList.add('on');
+  jutsuOv.setAttribute('aria-hidden', 'false');
+  renderJutsu();
+  if (juPick) {
+    const el = juBody.querySelector('.ju-row.pick');
+    if (el) { el.scrollIntoView({ block: 'center' }); setTimeout(() => el.classList.remove('pick'), 2400); }
+    juPick = null;
+  } else {
+    juInput.focus();
+  }
+}
+
+function closeJutsu() {
+  jutsuOv.classList.remove('on');
+  jutsuOv.setAttribute('aria-hidden', 'true');
+  juInput.value = '';
+}
+
+document.getElementById('btnJutsu').addEventListener('click', () => openJutsu());
+document.getElementById('juClose').addEventListener('click', closeJutsu);
+let juTimer = 0;
+juInput.addEventListener('input', () => {
+  clearTimeout(juTimer);
+  juTimer = setTimeout(renderJutsu, 120);
+});
+jutsuOv.addEventListener('click', e => { if (e.target === jutsuOv) closeJutsu(); });
+
+/* ══════════════════════════════════════════════════════════════════
+   9.7 影片《一张网》
+   ══════════════════════════════════════════════════════════════════ */
+
+const filmOv      = document.getElementById('filmOverlay');
+const filmVideo   = document.getElementById('filmVideo');
+const filmCloseBtn = document.getElementById('filmClose');
+const filmPlayBtn = document.getElementById('filmPlay');
+const filmFallback = document.getElementById('filmFallback');
+let filmTrigger = null;
+
+function setFilmHash(on) {
+  try {
+    const base = location.pathname + location.search;
+    history.replaceState(null, '', on ? base + '#film' : base);
+  } catch (e) { /* file:// 下可能不允许，忽略 */ }
+}
+
+function openFilm() {
+  if (filmOv.classList.contains('on')) return;
+  filmTrigger = document.activeElement;
+  filmFallback.hidden = true;
+  filmOv.classList.add('on');
+  filmOv.setAttribute('aria-hidden', 'false');
+  filmVideo.pause();
+  try { filmVideo.load(); } catch (e) { }
+  filmPlayBtn.hidden = false;
+  filmCloseBtn.focus({ preventScroll: true });
+  setFilmHash(true);
+}
+
+function closeFilm() {
+  if (!filmOv.classList.contains('on')) return;
+  filmOv.classList.remove('on');
+  filmOv.setAttribute('aria-hidden', 'true');
+  filmVideo.pause();
+  try { filmVideo.load(); } catch (e) { }
+  filmPlayBtn.hidden = false;
+  setFilmHash(false);
+  if (filmTrigger && filmTrigger.focus) filmTrigger.focus({ preventScroll: true });
+}
+
+document.getElementById('btnFilm').addEventListener('click', openFilm);
+document.getElementById('btnFilmTop').addEventListener('click', openFilm);
+document.getElementById('btnFilmFab').addEventListener('click', openFilm);
+filmCloseBtn.addEventListener('click', closeFilm);
+filmOv.addEventListener('click', e => { if (e.target === filmOv) closeFilm(); });
+filmPlayBtn.addEventListener('click', () => {
+  const p = filmVideo.play();
+  if (p && p.catch) p.catch(() => { });
+});
+filmVideo.addEventListener('play', () => { filmPlayBtn.hidden = true; });
+filmVideo.addEventListener('pause', () => { if (!filmVideo.ended) filmPlayBtn.hidden = false; });
+filmVideo.addEventListener('ended', () => { filmPlayBtn.hidden = false; });
+filmVideo.addEventListener('error', () => {
+  filmPlayBtn.hidden = true;
+  filmFallback.hidden = false;
+});
+detail.addEventListener('click', e => {
+  if (e.target.closest('[data-film]')) openFilm();
+});
+
+if (typeof location !== 'undefined' && location.hash === '#film') setTimeout(openFilm, 350);
 
 /* 画布上的「事件」开关：聚焦视图里挂不挂那条名场面时间带 */
 const btnEvLayer = document.getElementById('btnEvLayer');

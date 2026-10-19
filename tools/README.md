@@ -6,25 +6,41 @@
 ```
 tools/
   _paths.cjs        路径与 Chrome 位置（唯一的路径来源）
+  build.cjs         拼装：src/template.html + data/*.cjs + assets/avatars.json → index.html
   verify.cjs        89 项总校验：布局 / 重叠 / 头像 / 情感层 / 金句 / 四字评 / 渲染
   evcheck.cjs       名场面：25 条数据完整性 + 聚焦布局不撞车 + 开关生效
   epcheck.cjs       四字评：37 条 / 长度 4 / 无重复 + 注入点 + JS 语法
+  jucheck.cjs       忍术排行：41 条数据完整性 + 排序 + 覆盖率 + 面板渲染
   domcheck.cjs      真实渲染后的 DOM 抽查（详情面板里真的长出「经历过的名场面」）
   epshot.cjs        生成 docs/ep_*.png
   evshot.cjs        生成 docs/ev_*.png
+  jushot.cjs        生成 docs/ju_*.png
   crest-sheet.html  五枚阵营族徽的对照页（浏览器直接打开）
-  legacy/           早期调布局用的一次性诊断，留档不复用
+  legacy/           早期调布局用的一次性诊断，留档不复用（含抽数据的 extract-data.cjs）
   cloudflare/       短域名试建 / 账号探测 / 清理
 ```
+
+## 源码在哪改
+
+`index.html` 是**构建产物**，不要直接改它：
+
+- 改界面 / 逻辑 → `src/template.html`
+- 改角色 / 关系 / 名言 / 名场面 / 四字评 / 忍术 → `data/*.cjs`
+- 改头像 → `assets/avatars.json`
+
+改完跑 `node tools/build.cjs` 重新生成 `index.html`，再跑下面的校验。
+模板里 `/*__DATA:XXX__*/` 是数据注入点，build.cjs 按标记替换。
 
 ## 用法
 
 在**项目根目录**下跑：
 
 ```bash
+node tools/build.cjs      # 先构建，再校验
 node tools/verify.cjs     # 期望输出 === ALL CHECKS PASSED ===
 node tools/evcheck.cjs    # 期望输出 === EVENT CHECKS PASSED ===
 node tools/epcheck.cjs    # 期望输出 === EPITHET CHECKS PASSED ===
+node tools/jucheck.cjs    # 期望输出 === JUTSU CHECKS PASSED ===
 node tools/domcheck.cjs   # 期望输出 === DOM CHECK PASSED ===
 ```
 
@@ -33,6 +49,7 @@ node tools/domcheck.cjs   # 期望输出 === DOM CHECK PASSED ===
 ```bash
 node tools/epshot.cjs     # → docs/ep_detail.png / docs/ep_quotes.png
 node tools/evshot.cjs     # → docs/ev_strip.png / ev_strip2 / ev_card / ev_panel / ev_timeline
+node tools/jushot.cjs     # → docs/ju_panel.png / ju_dojutsu / ju_search / ju_detail
 ```
 
 中间产物（改写过的 HTML 副本）写在 `%TEMP%/narutomap-build/`，随手可删。
