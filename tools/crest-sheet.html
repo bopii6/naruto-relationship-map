@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>族徽对照</title>
+<style>
+  body{margin:0;background:#0c0b09;color:#e8e6e3;font-family:"Microsoft YaHei",sans-serif;padding:30px}
+  h1{font-size:15px;font-weight:500;letter-spacing:.1em;color:#8b8b93;margin:0 0 22px}
+  .row{display:flex;gap:34px;flex-wrap:wrap;margin-bottom:30px}
+  .cell{text-align:center}
+  .cell svg{display:block;margin:0 auto 8px}
+  .cell b{font-size:12px;font-weight:500;display:block}
+  .cell i{font-size:10px;color:#7d7d85;font-style:normal}
+  .sm{display:flex;align-items:center;gap:14px;font-size:12px;color:#b9b8bf}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;
+        border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.028)}
+</style></head><body>
+<h1>族徽对照 · 木叶 / 宇智波 / 晓 / 砂隐 / 千手</h1>
+<div class="row" id="big"></div>
+<h1>实际使用尺寸（侧栏 chip）</h1>
+<div class="sm" id="small"></div>
+<script>
+const CRESTS = {
+  konoha: {
+    line: 'M11.6 23.2C8.2 20.6 3.2 15.4 3.2 10.6 3.2 6.3 7.1 3 12 3 16.9 3 20.8 6.3 20.8 10.6 20.8 15 17.2 19.6 12.4 23 9.4 21 7.2 17.6 7.2 14.4 7.2 11.4 9.4 9.1 12 9.1 14.6 9.1 16.8 11.3 16.8 14.1 16.8 16.4 15 18.3 12.6 18.3 10.8 18.3 9.3 16.8 9.3 15 9.3 13.5 10.5 12.3 12 12.3 13.3 12.3 14.3 13.3 14.3 14.6'
+  },
+  uchiha: { leaf: 'M3.95 17.15A9.3 9.3 0 1 1 20.05 17.15Z', line: 'M10.3 17.15h3.4v3.4c0 1.4-3.4 1.4-3.4 0Z' },
+  akatsuki: { line: 'M5.2 17.6a3.5 3.5 0 0 1-.2-7 4.3 4.3 0 0 1 7.7-2.2 4.1 4.1 0 0 1 6.7 3.2 3.1 3.1 0 0 1-.5 6Z' },
+  sand: { leaf: 'M6.2 2.8h11.6L12 12l5.8 9.2H6.2L12 12Z' },
+  senju: { glyph: '千' }
+};
+const FACTIONS = {
+  konoha:   { name:'木叶忍者',   color:'#57c785' },
+  uchiha:   { name:'宇智波一族', color:'#a277e8' },
+  akatsuki: { name:'晓组织',     color:'#ef5b52' },
+  sand:     { name:'砂隐村',     color:'#d9a441' },
+  senju:    { name:'千手一族',   color:'#56a8e8' }
+};
+function crestSvg(key, size, color){
+  const c = CRESTS[key] || {};
+  const s = size || 14, col = color || 'currentColor';
+  if (c.glyph) {
+    return '<svg class="crest" width="'+s+'" height="'+s+'" viewBox="0 0 24 24" aria-hidden="true">'+
+      '<text x="12" y="12.4" text-anchor="middle" dominant-baseline="central" font-size="17.5" '+
+      'font-weight="700" fill="'+col+'" font-family="serif">'+c.glyph+'</text></svg>';
+  }
+  return '<svg class="crest" width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" '+
+    'stroke="'+col+'" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">'+
+    (c.leaf ? '<path d="'+c.leaf+'"/>' : '') +
+    (c.line ? '<path d="'+c.line+'"/>' : '') +
+    '</svg>';
+}document.getElementById('big').innerHTML = Object.keys(CRESTS).map(k =>
+  '<div class="cell">' + crestSvg(k, 108, FACTIONS[k].color) +
+  '<b style="color:'+FACTIONS[k].color+'">'+FACTIONS[k].name+'</b><i>108px</i></div>').join('');
+document.getElementById('small').innerHTML = Object.keys(CRESTS).map(k =>
+  '<span class="chip" style="color:'+FACTIONS[k].color+'">'+crestSvg(k,13,FACTIONS[k].color)+
+  '<span style="color:#b9b8bf">'+FACTIONS[k].name+'</span></span>').join('');
+</script></body></html>

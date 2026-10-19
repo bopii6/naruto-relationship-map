@@ -4,6 +4,30 @@
 
 37 位角色 · 60 条关系 · 99 条名言 · **25 个名场面** · 每人一句**四字评**。
 
+## 项目结构
+
+```
+naruto-relationship-map/
+├── index.html          ← 唯一源文件（也是部署入口，约 560 KB，头像已内嵌）
+├── README.md
+├── tools/              ← 校验与截图脚本，见 tools/README.md
+│   ├── _paths.cjs      ← 所有路径只在这里定义
+│   ├── verify.cjs      ← 89 项总校验
+│   ├── evcheck.cjs     ← 名场面数据 + 布局校验
+│   ├── epcheck.cjs     ← 四字评校验
+│   ├── domcheck.cjs    ← 真实 DOM 抽查
+│   ├── epshot.cjs / evshot.cjs   ← 重新生成 docs/ 里的截图
+│   ├── legacy/         ← 早期一次性诊断（留档）
+│   └── cloudflare/     ← 短域名试建 / 账号探测
+├── docs/               ← 界面截图（由 tools/*shot.cjs 生成）
+└── assets/             ← 头像源数据
+    ├── avatars/        ← 37 张裁好的 160×160 JPEG + 原始立绘
+    ├── avatars.json    ← 嵌进 index.html 的那份 base64
+    └── names.txt       ← 当时按 AniList 查角色用的名单
+```
+
+整个项目只有一个 HTML、零外部依赖；`tools/` 和 `docs/` 只是开发期的辅助，删掉也不影响打开 `index.html`。
+
 ---
 
 ## 三种视图
@@ -131,19 +155,33 @@
 - **Cloudflare Pages**：<https://kyuubi.pages.dev/> ← 短链接，点开就能用
 - **GitHub**：<https://github.com/bopii6/naruto-relationship-map>
 
+## 本地校验
+
+```bash
+node tools/verify.cjs     # 布局 / 重叠 / 头像 / 情感层 / 金句 / 四字评 / 渲染，89 项
+node tools/evcheck.cjs    # 25 个名场面的数据完整性与聚焦布局
+node tools/epcheck.cjs    # 37 条四字评 + JS 语法
+node tools/domcheck.cjs   # 真实渲染后的 DOM 抽查
+```
+
+四个都打印 `=== … PASSED ===` 才算没问题。截图用 `node tools/evshot.cjs`（详见 `tools/README.md`）。
+
 ## 部署
 
-改完 `index.html` 后：
+Cloudflare Pages 项目名 `kyuubi`，只发布 `index.html` 一个文件：
 
 ```bash
 # 1) 推 GitHub
 git add -A && git commit -m "update" && git push
 
-# 2) 推 Cloudflare Pages
+# 2) 推 Cloudflare Pages（单独一个只含 index.html 的暂存目录）
+mkdir .deploy && copy index.html .deploy\index.html
 wrangler pages deploy .deploy --project-name kyuubi --branch main
 ```
 
-`wrangler` 会把 `.deploy` 目录里的文件整体传上去，所以把要发布的文件放进 `.deploy` 即可（本仓库只需要 `index.html`）。首次在本机使用需要先 `wrangler login`。
+`wrangler` 会把暂存目录里的文件整体传上去，所以只需要把 `index.html` 放进去。首次在本机使用需要先 `wrangler login`。
+
+生产地址 <https://kyuubi.pages.dev/> 会跟着 `main` 分支的部署走；每次部署还会额外给一个 `<hash>.kyuubi.pages.dev` 的一次性预览地址。
 
 ## 版权声明
 
