@@ -1,0 +1,3 @@
+# wrangler / Pages 的本地缓存与发布暂存
+.wrangler/
+.deploy/
