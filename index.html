@@ -313,6 +313,71 @@
   .qov-pick .qov-card{background:rgba(200,64,47,.07);border-color:rgba(200,64,47,.28)}
   .qov-empty{padding:60px 0;text-align:center;color:var(--muted);font-size:12.5px}
 
+  /* ── 名场面 · 年表 ── */
+  .ev-era{margin:0 0 22px}
+  .ev-era > h4{
+    margin:0 0 12px;display:flex;align-items:center;gap:9px;
+    font-family:var(--serif);font-size:12px;font-weight:600;letter-spacing:.2em;color:#d9c9a0;
+  }
+  .ev-era > h4::after{content:"";flex:1 1 auto;height:1px;background:var(--line)}
+  .ev-era > h4 em{font-style:normal;font-size:10px;letter-spacing:.14em;color:var(--muted)}
+  .ev-list{position:relative;padding-left:24px}
+  .ev-list::before{content:"";position:absolute;left:5px;top:9px;bottom:9px;width:1px;background:var(--line)}
+  .ev-item{
+    position:relative;margin:0 0 11px;padding:12px 15px 13px;border-radius:12px;
+    background:rgba(255,255,255,.035);border:1px solid var(--line);cursor:pointer;
+    transition:background 160ms var(--ease),transform 160ms var(--ease);
+  }
+  .ev-item::before{
+    content:"";position:absolute;left:-24px;top:19px;width:9px;height:9px;transform:rotate(45deg);
+    background:#0d0d10;border:1.5px solid var(--seal);box-shadow:0 0 10px rgba(200,64,47,.35);
+  }
+  .ev-item:hover{background:rgba(255,255,255,.075);transform:translateY(-1px)}
+  .ev-top{display:flex;align-items:center;gap:9px;margin-bottom:5px}
+  .ev-vol{font-size:10px;letter-spacing:.1em;color:#8f8e96;font-variant-numeric:tabular-nums}
+  .ev-n{margin-left:auto;font-size:10px;color:#6f6f77;font-variant-numeric:tabular-nums}
+  .ev-item h5{margin:0;font-family:var(--serif);font-size:15px;font-weight:600;letter-spacing:.05em;color:#f2f0ed}
+  .ev-what{margin:7px 0 0;font-size:11.5px;line-height:1.85;color:#b6b4bb;text-wrap:pretty}
+  .ev-changed{margin:8px 0 0;display:flex;gap:8px;font-size:11px;line-height:1.8;color:#c9b98f;text-wrap:pretty}
+  .ev-tag{
+    flex:0 0 auto;align-self:flex-start;margin-top:2px;padding:1px 6px;border-radius:5px;
+    font-size:9.5px;letter-spacing:.08em;color:#e0cf9f;background:rgba(200,64,47,.14);
+    box-shadow:inset 0 0 0 1px rgba(200,64,47,.3);
+  }
+  .ev-people{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+  .ev-p{
+    display:inline-flex;align-items:center;gap:5px;padding:2px 9px 2px 2px;border-radius:999px;cursor:pointer;
+    background:rgba(255,255,255,.05);border:1px solid var(--line);color:#d5d3d0;
+    font-family:var(--sans);font-size:10.5px;transition:background 140ms var(--ease),border-color 140ms var(--ease);
+  }
+  .ev-p:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.26)}
+  .ev-p img{width:18px;height:18px;border-radius:50%;object-fit:cover;border:1.5px solid var(--fc,#555);background:#1a1a1e}
+  .ev-empty{padding:60px 0;text-align:center;color:var(--muted);font-size:12.5px}
+
+  /* ── 名场面：详情面板里的单张卡 ── */
+  .d-ev-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .d-ev-era{font-size:10px;letter-spacing:.16em;color:#c9a86a}
+  .d-ev-vol{margin-left:auto;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .d-ev-name{margin:0;font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:.05em;color:#f2f0ed;line-height:1.3}
+  .d-ev-line{margin:11px 0 0;font-size:12px;line-height:1.9;color:#b6b4bb;text-wrap:pretty}
+  .d-ev-changed{
+    margin:13px 0 0;padding:11px 13px;border-radius:10px;font-size:11.5px;line-height:1.85;color:#dcc9a0;
+    background:rgba(200,64,47,.07);border:1px solid rgba(200,64,47,.22);text-wrap:pretty;
+  }
+  .d-ev-changed b{display:block;margin-bottom:4px;font-size:9.5px;letter-spacing:.2em;color:#e0cf9f}
+
+  /* ── 名场面：人物面板里的清单 ── */
+  .d-evlist{display:flex;flex-direction:column;gap:5px}
+  .d-evrow{
+    display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:9px;cursor:pointer;text-align:left;
+    background:rgba(255,255,255,.035);border:1px solid var(--line);
+    color:#d5d3d0;font-family:var(--sans);font-size:11px;
+    transition:background 140ms var(--ease);
+  }
+  .d-evrow:hover{background:rgba(255,255,255,.08)}
+  .d-evrow .dia{flex:0 0 auto;width:7px;height:7px;transform:rotate(45deg);background:var(--seal);opacity:.85}
+  .d-evrow .v{margin-left:auto;font-size:9.5px;color:#72727a;font-variant-numeric:tabular-nums}
+
   .hud-bottom{
     bottom:18px;left:50%;transform:translateX(-50%);padding:7px 16px;display:flex;align-items:center;gap:12px;
     font-size:11px;color:var(--muted);white-space:nowrap;
@@ -413,6 +478,10 @@
       <button id="btnLabels" type="button">隐藏名字</button>
     </div>
     <div class="btns" style="margin-top:6px">
+      <button id="btnEvLayer" type="button" title="聚焦视图里，把这个人经历过的名场面挂在最外圈">事件</button>
+    </div>
+    <div class="btns" style="margin-top:6px">
+      <button id="btnEvents" type="button">名场面 · 年表</button>
       <button id="btnQuotes" type="button">名言 · 名场面</button>
     </div>
   </section>
@@ -440,6 +509,19 @@
     </div>
     <div class="qov-themes" id="qovThemes"></div>
     <div class="qov-body" id="qovBody"></div>
+  </div>
+</div>
+
+<div id="eventOverlay" class="qov" aria-hidden="true">
+  <div class="qov-panel" role="dialog" aria-modal="true" aria-label="名场面 · 年表">
+    <div class="qov-head">
+      <div class="qov-title"><b>名场面 · 年表</b><span id="evCount"></span></div>
+      <div class="qov-search">
+        <input id="evInput" type="search" placeholder="搜索事件 / 人物 / 卷…" autocomplete="off" spellcheck="false">
+      </div>
+      <button id="evClose" type="button" class="qov-btn">关闭</button>
+    </div>
+    <div class="qov-body" id="evBody"></div>
   </div>
 </div>
 
@@ -1106,6 +1188,148 @@ const EPITHET = {
 };
 NODES.forEach(n => { n.ep = EPITHET[n.id] || ''; });
 
+/* ── 名场面：改动过整个故事走向的那些时刻 ──
+   who = 当事人；what = 发生了什么；changed = 它把什么改掉了 */
+const EVENTS = [
+  { id:'team7', era:'序章', vol:'第 1 卷', name:'第七班结成',
+    who:['kakashi','naruto','sasuke','sakura'],
+    what:'卡卡西的铃铛测试。三个孩子各自为战，全军覆没。他最后告诉他们：不重视同伴的人，连废物都不如。',
+    changed:'鸣人第一次不是被当成「妖狐」，而是被当成队友。这句话成了他和佐助此后所有选择的分界线。' },
+
+  { id:'wave', era:'序章', vol:'第 2–4 卷', name:'波之国',
+    who:['naruto','sasuke','sakura','kakashi'],
+    what:'第一次真正的生死任务。白为了保护再不斩而死，再不斩流着泪说他也是人。',
+    changed:'鸣人第一次看见「忍者」这个词底下是有人在哭的。也是在这里，佐助第一次替鸣人挡下了攻击。' },
+
+  { id:'kyuubi', era:'序章', vol:'第 1 卷 · 回忆', name:'九尾之夜',
+    who:['minato','kushina','naruto','hiruzen','obito'],
+    what:'带土操控九尾袭村，玖辛奈被抽走尾兽。水门用尸鬼封尽把九尾一分为二，一半封进刚出生的鸣人。',
+    changed:'鸣人一夜之间成了全村憎恨的对象，也成了带土此后十六年真正的对手。' },
+
+  { id:'massacre', era:'序章', vol:'第 25 卷 · 回忆', name:'宇智波灭族',
+    who:['itachi','sasuke','danzo','hiruzen','obito'],
+    what:'宇智波政变在即。鼬接受团藏与三代的条件，亲手灭族，只留下弟弟一个人。',
+    changed:'那一夜定死了佐助的一生。而鼬从此要靠扮演「叛徒」才能活下去。' },
+
+  { id:'chunin', era:'第一部', vol:'第 12 卷', name:'中忍考试 · 宁次战',
+    who:['naruto','neji','hinata'],
+    what:'宁次用分家的宿命论质问鸣人：你能改变命运吗？鸣人用九尾的力量赢了这场仗，然后说「等我当上火影，再来改变日向家」。',
+    changed:'宁次第一次开始相信命运可以被改。这才是他后来肯替鸣人赴死的原因。' },
+
+  { id:'crush', era:'第一部', vol:'第 13–15 卷', name:'木叶崩坏',
+    who:['hiruzen','orochimaru','naruto','gaara'],
+    what:'大蛇丸借中忍考试袭击木叶。三代火影用尸鬼封尽拿命封住大蛇丸的双手，自己倒在屋顶上。',
+    changed:'木叶失去了唯一一个把「火之意志」讲了一辈子的人，也因此不得不把纲手请回来。' },
+
+  { id:'sannin', era:'第一部', vol:'第 17–19 卷', name:'三忍大战',
+    who:['jiraiya','tsunade','orochimaru','naruto'],
+    what:'三忍多年后再次交手。纲手被鸣人的「说到做到」震住，克服恐血，接下五代火影之位的赌注。',
+    changed:'鸣人第一次从「被保护的孩子」变成「能让大人重新站起来的人」。' },
+
+  { id:'defection', era:'第一部', vol:'第 20–21 卷', name:'佐助出走 · 终结之谷',
+    who:['sasuke','naruto','sakura','orochimaru'],
+    what:'佐助为复仇投奔大蛇丸。鸣人在终结之谷拦他，输在最后一击没有下杀手。',
+    changed:'两个人从「同伴」变成了「非追上你不可」。这条线一直烧到第 72 卷才合上。' },
+
+  { id:'sasoriFight', era:'疾风传', vol:'第 28 卷', name:'蝎之死',
+    who:['sasori','sakura'],
+    what:'蝎把自己也炼成了傀儡，想成为「永恒的艺术」。小樱和千代联手折断了他。',
+    changed:'小樱证明了自己不再只是「看着两个背影的人」——她第一次真正站上了战场。' },
+
+  { id:'hidan', era:'疾风传', vol:'第 34–36 卷', name:'鹿丸的复仇',
+    who:['shikamaru','choji','ino','hidan','kakuzu'],
+    what:'阿斯玛战死后，鹿丸把飞段引到自己挖好的坑里，亲手埋了他，然后点了一支烟。',
+    changed:'鹿丸第一次不是「动脑子」，而是「动手」。从这天起他开始把责任扛到底。' },
+
+  { id:'deidaraFight', era:'疾风传', vol:'第 38–39 卷', name:'迪达拉 · 自爆',
+    who:['deidara','sasuke'],
+    what:'迪达拉把「艺术就是瞬间之美」烧到底，用自爆想和佐助同归于尽。佐助靠蛇的替身术活了下来。',
+    changed:'佐助的复仇开始反噬身边的人——他手下的同伴也一并死在了这条路上。' },
+
+  { id:'itachiBrothers', era:'疾风传', vol:'第 40–43 卷', name:'兄弟之战',
+    who:['itachi','sasuke'],
+    what:'佐助终于杀了鼬。鼬死前伸手点了一下他的额头。之后带土告诉佐助：鼬是奉木叶之命灭族的，他把所有罪都背在了自己身上。',
+    changed:'佐助恨的对象从哥哥换成了木叶，再换成整个忍界——而他自己也变成了鼬。' },
+
+  { id:'jiraiyaDeath', era:'疾风传', vol:'第 41–42 卷', name:'自来也之死',
+    who:['jiraiya','nagato','konan'],
+    what:'自来也查明佩恩的本体是长门。六道佩恩刺穿了他，他用最后一口气把暗号写在深作的背上。',
+    changed:'「绝不放弃」这句话被留了下来，成了鸣人手里最后一件武器。' },
+
+  { id:'painAttack', era:'疾风传', vol:'第 42–44 卷', name:'佩恩袭村',
+    who:['nagato','naruto','hinata','kakashi','sakura','konan','tsunade'],
+    what:'佩恩用神罗天征抹平了木叶，卡卡西战死，雏田冲上去保护鸣人被击倒。鸣人暴走进九尾，最后靠一句「不放弃」说服了长门。',
+    changed:'长门用轮回天生术把木叶所有人复活。鸣人从「妖狐」变成了英雄。' },
+
+  { id:'kageSummit', era:'忍界大战', vol:'第 45–47 卷', name:'五影会谈 · 宣战',
+    who:['sasuke','obito','gaara','danzo','temari','kankuro'],
+    what:'佐助闯进五影会谈，带土当场宣布「月之眼计划」，向整个忍界宣战。我爱罗第一次以风影的身份坐上五影席，手鞠和勘九郎是他的护卫。',
+    changed:'五个互相戒备了几十年的村子，第一次必须成为一队。' },
+
+  { id:'danzoDeath', era:'忍界大战', vol:'第 47–49 卷', name:'团藏之死',
+    who:['sasuke','danzo','obito'],
+    what:'佐助追上团藏，逼他一条一条解开右臂上的写轮眼，最后杀了他。团藏死前用封印术想拉佐助陪葬，没成功。',
+    changed:'佐助亲手杀了「让宇智波灭族的那个人」，也亲手把香燐扔在了原地。' },
+
+  { id:'alliance', era:'忍界大战', vol:'第 52–55 卷', name:'忍界大战',
+    who:['naruto','gaara','tsunade','obito','madara'],
+    what:'四方忍者联军成立，八万忍者对上十万白绝。带土把十尾放了出来。',
+    changed:'「忍界的敌人是谁」第一次有了一个所有村子都认的答案。' },
+
+  { id:'kisameDeath', era:'忍界大战', vol:'第 55 卷', name:'鬼鲛之死',
+    who:['kisame','guy'],
+    what:'鬼鲛的真身被识破，和凯交手，被「昼虎」击倒。被俘之后他咬断舌头，通灵出鲨鱼把自己吃掉，只让那卷情报回到带土手里。',
+    changed:'到死都没有出卖同伴——晓里面最像「忍者」的那个人，反而是敌人。' },
+
+  { id:'shisuiDeath', era:'忍界大战', vol:'第 59 卷 · 回忆', name:'止水之死',
+    who:['shisui','itachi','danzo'],
+    what:'止水想用「别天神」阻止政变，被团藏夺走右眼。他把左眼托付给鼬，留下一封遗书，跳下悬崖。',
+    changed:'鼬被迫接过「别天神」，也就接过了灭族那条不归路。' },
+
+  { id:'hashiMadara', era:'忍界大战', vol:'第 62–63 卷 · 回忆', name:'斑与柱间',
+    who:['hashirama','madara','tobirama'],
+    what:'斑离开木叶，带着九尾回来，在终结之谷被柱间击败。柱间下不了杀手，斑用伊邪那岐活了下来。',
+    changed:'那一刀的空隙，是之后几十年忍界所有战争的开端。' },
+
+  { id:'nejiDeath', era:'忍界大战', vol:'第 64 卷', name:'宁次之死',
+    who:['neji','naruto','hinata'],
+    what:'十尾的木遁刺向鸣人，宁次用身体挡了下来。分家的笼中鸟，最后是为了宗家的雏田而死。',
+    changed:'鸣人第一次在战场上被「我谁也救不了」这个念头击穿——也是他后来重上战场的理由。' },
+
+  { id:'eighthGate', era:'忍界大战', vol:'第 66–67 卷', name:'八门全开',
+    who:['guy','madara','lee','kakashi'],
+    what:'凯打开第八门，用「夜凯」一脚踢碎了六道斑的半边身体。斑亲口承认：体术方面，你是最强的。',
+    changed:'「不会忍术也能超越天才」这句话，在六道斑面前被证明了一次。' },
+
+  { id:'kaguya', era:'忍界大战', vol:'第 67–68 卷', name:'黑绝的背叛',
+    who:['zetsu','madara'],
+    what:'斑刚以为自己是赢家，黑绝从背后把手插进他的胸口。他做的这一切，从头到尾都是为了把母亲辉夜放出来。',
+    changed:'忍界大战打到最后，真正的黑手才露脸——斑也才发现自己是被利用了一辈子的那个人。' },
+
+  { id:'finalValley', era:'忍界大战', vol:'第 69–72 卷', name:'终末之谷 · 最终之战',
+    who:['naruto','sasuke','sakura','kakashi'],
+    what:'两个人打到各断一臂，躺在谷底动弹不得。佐助第一次说出「我输了」。',
+    changed:'一条走了 72 卷的复仇线，最后用「我承认你」收尾。' },
+
+  { id:'newEra', era:'新时代', vol:'第 72 卷 · 外传', name:'佐助归乡',
+    who:['sasuke','sarada','sakura'],
+    what:'在外面查了很久的佐助回到村子，佐良娜第一次真正见到父亲。',
+    changed:'新一代要回答的问题不再是「怎样复仇」，而是「怎样成为火影」。' }
+];
+const evById = new Map(EVENTS.map(e => [e.id, e]));
+EVENTS.forEach((e, i) => { e.no = i + 1; });
+
+/* 画布上那条时间带太窄，写不下全名，给每个名场面一个短标签 */
+const EVSHORT = {
+  team7:'结班', wave:'波之国', kyuubi:'九尾夜', massacre:'灭族', chunin:'宁次战',
+  crush:'崩坏', sannin:'三忍', defection:'佐助出走', sasoriFight:'蝎', hidan:'鹿丸复仇',
+  deidaraFight:'迪达拉', itachiBrothers:'兄弟战', jiraiyaDeath:'自来也', painAttack:'佩恩',
+  shisuiDeath:'止水', kageSummit:'五影会谈', danzoDeath:'团藏', alliance:'忍界大战',
+  kisameDeath:'鬼鲛', hashiMadara:'斑与柱间', kaguya:'黑绝', nejiDeath:'宁次',
+  eighthGate:'八门', finalValley:'终末之谷', newEra:'佐良娜'
+};
+EVENTS.forEach(e => { e.s = EVSHORT[e.id] || e.name.slice(0, 3); });
+
 const LINKS = [
   ['minato','naruto','family','父子'],
   ['kushina','naruto','family','母子'],
@@ -1207,6 +1431,9 @@ const nodes = NODES.map(n => {
 });
 const byId = new Map(nodes.map(n => [n.id, n]));
 
+/* 名场面的「当事人」：等 nodes 建好之后再挂（要用带动图的那些字段） */
+EVENTS.forEach(e => { e.people = e.who.map(id => byId.get(id)).filter(Boolean); });
+
 const links = LINKS.map(a => {
   const e = EMO[a[0] + '|' + a[1] + '|' + a[2]] ||
             EMO[a[0] + '|' + a[1]] ||
@@ -1237,7 +1464,8 @@ const GPAD = 20, GTITLE = 56, GGAP = 40;
 let mode = 'zone';
 let focusId = null;
 let bigAvatars = false;
-let deco = { bounds:null, blocks:[], bands:[], arcs:[] };
+let evLayer = true;
+let deco = { bounds:null, blocks:[], bands:[], arcs:[], events:[] };
 
 const ZONE_DEFS = [
   { key:'konoha',   cols:6, row:0 },
@@ -1354,7 +1582,24 @@ function layoutFocus(id) {
   });
 
   const outer = R + 140;
-  return { blocks:[], bands:[], arcs, R, center:c, rel, bounds:{ minX:-outer, minY:-outer, maxX:outer, maxY:outer } };
+
+  /* ── 名场面：在聚焦环下方排成一条时间带（左→右＝叙事先后） ── */
+  const evs = evLayer ? EVENTS.filter(e => e.who.indexOf(id) >= 0) : [];
+  const step = clamp((R * 2) / Math.max(evs.length, 1), 58, 150);
+  const stripW = step * evs.length;
+  const stripY = R + 172;
+  evs.forEach((e, i) => {
+    e.ex = -stripW / 2 + (i + 0.5) * step;
+    e.ey = stripY;
+    e.up = i % 2 === 0;                 /* 标签上下交错，避免互相压住 */
+  });
+  const hw = Math.max(outer, stripW / 2 + 56);
+  const hh = evs.length ? stripY + 70 : outer;
+
+  return {
+    blocks:[], bands:[], arcs, R, center:c, rel, events:evs, stripW, stripY, step,
+    bounds:{ minX:-hw, minY:-outer, maxX:hw, maxY:Math.max(outer, hh) }
+  };
 }
 
 function boundsOf(arr) {
@@ -1446,6 +1691,8 @@ function fitView() {
    ══════════════════════════════════════════════════════════════════ */
 
 let hoverId = null, selId = null;
+let evtPick = null, hoverEvt = null;
+let evtReturnId = null;
 let labelsOn = true;
 let emotionLens = false;
 const factionOn = {}; Object.keys(FACTIONS).forEach(k => factionOn[k] = true);
@@ -1485,6 +1732,10 @@ function render() {
     }
   }
 
+  /* ── 名场面：选中的那一刻，只点亮当事人 ── */
+  const evtActive = hoverEvt || (evtPick ? evById.get(evtPick) : null);
+  const hi = evtActive ? new Set(evtActive.who) : null;
+
   /* ── 和纸底：木叶漩涡叶徽记水印（跟着世界一起平移） ── */
   {
     let wx, wy, size;
@@ -1511,7 +1762,9 @@ function render() {
     const dx = B[0] - A[0], dy = B[1] - A[1];
     const len = Math.hypot(dx, dy) || 1;
     const cfg = REL[l.type];
-    const touched = focus && (l.a.id === focus || l.b.id === focus);
+    const touched = hi
+      ? (hi.has(l.a.id) && hi.has(l.b.id))
+      : !!(focus && (l.a.id === focus || l.b.id === focus));
     const same = l.a.f === l.b.f;
     const lensDim = emotionLens && (!driveOn[l.a.drive] || !driveOn[l.b.drive]);
 
@@ -1519,7 +1772,7 @@ function render() {
     const h = (l.heat == null ? 50 : l.heat) / 100;
     const boost = emotionLens ? 1.28 : 1;
     let alpha, lw;
-    if (focus) {
+    if (focus || hi) {
       alpha = touched ? (0.42 + h * 0.58) : 0.03;
       lw = touched ? (1.3 + h * 2.7) * boost : 1.0;
     } else {
@@ -1559,7 +1812,7 @@ function render() {
       ctx.globalAlpha = Math.min(alpha, 1);
     }
 
-    if (l.type === 'control' && (touched || !focus)) {
+    if (l.type === 'control' && (touched || (!focus && !hi))) {
       const t = 0.9;
       const px = qp(A[0], cx, B[0], t), py = qp(A[1], cy, B[1], t);
       const tx = qp(A[0], cx, B[0], t + 0.02) - px, ty = qp(A[1], cy, B[1], t + 0.02) - py;
@@ -1609,14 +1862,14 @@ function render() {
     const isC = mode === 'focus' && focusId === p.id;
     const isF = focus === p.id;
     const lensDim = emotionLens && !driveOn[p.drive];
-    const dim = (focus && !nb.has(p.id)) || lensDim;
+    const dim = hi ? !hi.has(p.id) : ((focus && !nb.has(p.id)) || lensDim);
     const boost = bigAvatars ? 1.22 : 1;
     const r = Math.max(p.r * k * (isC ? 1.26 : 1) * boost, 11);
     const glowCol = emotionLens ? drv.color : fac.color;
 
     ctx.globalAlpha = dim ? 0.14 : 1;
 
-    if (!dim && focus) {
+    if (!dim && (focus || hi)) {
       const g = ctx.createRadialGradient(x, y, r * 0.4, x, y, r * 1.6);
       g.addColorStop(0, hexA(glowCol, 0.32));
       g.addColorStop(1, hexA(glowCol, 0));
@@ -1688,6 +1941,57 @@ function render() {
       ctx.strokeText(label, x, ty);
       ctx.fillStyle = '#eceae7';
       ctx.fillText(label, x, ty);
+    }
+  }
+
+  /* ── 名场面：聚焦视图下方的菱形时间带（左→右＝叙事先后） ── */
+  const evs = deco.events || [];
+  if (evs.length) {
+    const WS = (wx, wy) => [wx * k + ox, wy * k + oy];
+    const axisY = WS(0, deco.stripY)[1];
+    const ax0 = WS(-deco.stripW / 2, 0)[0];
+    const ax1 = WS(deco.stripW / 2, 0)[0];
+
+    ctx.globalAlpha = 1;
+    ctx.beginPath(); ctx.moveTo(ax0 - 18, axisY); ctx.lineTo(ax1 + 18, axisY);
+    ctx.strokeStyle = 'rgba(200,64,47,.30)'; ctx.lineWidth = 1; ctx.stroke();
+
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (const e of evs) {
+      const P = WS(e.ex, e.ey);
+      const x = P[0], y = P[1];
+      const on = hoverEvt === e || (!hoverEvt && evtPick === e.id);
+      const s = clamp(26 * k, 15, 24);
+
+      ctx.save();
+      ctx.translate(x, y); ctx.rotate(Math.PI / 4);
+      ctx.beginPath(); ctx.rect(-s / 2, -s / 2, s, s);
+      ctx.fillStyle = on ? 'rgba(200,64,47,.42)' : 'rgba(11,11,14,.94)';
+      ctx.fill();
+      ctx.lineWidth = on ? 2 : 1.2;
+      ctx.strokeStyle = on ? '#ff9d86' : 'rgba(200,64,47,.7)';
+      if (on) { ctx.shadowColor = '#e0483a'; ctx.shadowBlur = 16; }
+      ctx.stroke();
+      ctx.restore();
+      ctx.shadowBlur = 0;
+
+      ctx.globalAlpha = on ? 1 : 0.85;
+      ctx.font = '600 ' + clamp(s * 0.5, 8.5, 12).toFixed(1) + 'px ' + FONT;
+      ctx.fillStyle = on ? '#ffe8e1' : '#d8b6a6';
+      ctx.fillText(String(e.no), x, y + 0.5);
+      ctx.globalAlpha = 1;
+
+      if (labelsOn) {
+        ctx.font = '500 10.5px ' + FONT;
+        const w = ctx.measureText(e.s).width + 13;
+        const ly = y + (e.up ? -1 : 1) * (s * 0.6 + 15);
+        ctx.fillStyle = on ? 'rgba(200,64,47,.92)' : 'rgba(11,11,14,.90)';
+        roundRect(x - w / 2, ly - 9.5, w, 19, 9.5); ctx.fill();
+        ctx.strokeStyle = on ? 'rgba(255,157,134,.85)' : 'rgba(200,64,47,.38)';
+        ctx.lineWidth = 1; ctx.stroke();
+        ctx.fillStyle = on ? '#ffe8e1' : '#d9c9a0';
+        ctx.fillText(e.s, x, ly + 0.5);
+      }
     }
   }
 
@@ -1801,14 +2105,27 @@ function pick(mx, my) {
   return best;
 }
 
-let dragNode = null, panning = false;
+function pickEvent(mx, my) {
+  const evs = deco.events || [];
+  let best = null, bd = Infinity;
+  for (const e of evs) {
+    const x = e.ex * view.k + view.x, y = e.ey * view.k + view.y;
+    const d = Math.hypot(mx - x, my - y);
+    if (d < 20 && d < bd) { bd = d; best = e; }
+  }
+  return best;
+}
+
+let dragNode = null, panning = false, downEvt = null;
 let lastX = 0, lastY = 0, downX = 0, downY = 0, moved = false;
 
 canvas.addEventListener('pointerdown', e => {
   canvas.setPointerCapture(e.pointerId);
   const p = pick(e.clientX, e.clientY);
   lastX = downX = e.clientX; lastY = downY = e.clientY; moved = false;
-  if (p) dragNode = p; else { panning = true; canvas.style.cursor = 'grabbing'; }
+  downEvt = p ? null : pickEvent(e.clientX, e.clientY);
+  if (p) dragNode = p;
+  else if (!downEvt) { panning = true; canvas.style.cursor = 'grabbing'; }
 });
 
 canvas.addEventListener('pointermove', e => {
@@ -1823,11 +2140,14 @@ canvas.addEventListener('pointermove', e => {
   } else {
     const p = pick(e.clientX, e.clientY);
     const id = p ? p.id : null;
-    if (id !== hoverId) {
-      hoverId = id;
-      canvas.style.cursor = p ? 'pointer' : 'default';
-      if (p) showTip(p, e.clientX, e.clientY); else tip.classList.remove('on');
-    } else if (p && tip.classList.contains('on')) {
+    const ev = p ? null : pickEvent(e.clientX, e.clientY);
+    if (id !== hoverId || ev !== hoverEvt) {
+      hoverId = id; hoverEvt = ev || null;
+      canvas.style.cursor = (p || ev) ? 'pointer' : 'default';
+      if (p) showTip(p, e.clientX, e.clientY);
+      else if (ev) showEvTip(ev, e.clientX, e.clientY);
+      else tip.classList.remove('on');
+    } else if ((p || ev) && tip.classList.contains('on')) {
       moveTip(e.clientX, e.clientY);
     }
   }
@@ -1836,7 +2156,8 @@ canvas.addEventListener('pointermove', e => {
 
 function endDrag(e) {
   if (dragNode) { if (!moved) selectNode(dragNode.id); dragNode = null; }
-  else if (panning) { panning = false; canvas.style.cursor = hoverId ? 'pointer' : 'default'; }
+  else if (downEvt) { if (!moved) selectEvent(downEvt.id); downEvt = null; }
+  else if (panning) { panning = false; canvas.style.cursor = (hoverId || hoverEvt) ? 'pointer' : 'default'; }
   try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
 }
 canvas.addEventListener('pointerup', endDrag);
@@ -1851,7 +2172,18 @@ canvas.addEventListener('wheel', e => {
   hoverId = null; tip.classList.remove('on');
 }, { passive:false });
 
-canvas.addEventListener('pointerleave', () => { hoverId = null; tip.classList.remove('on'); });
+canvas.addEventListener('pointerleave', () => { hoverId = null; hoverEvt = null; tip.classList.remove('on'); });
+
+function showEvTip(e, mx, my) {
+  tip.innerHTML =
+    '<div class="t-row"><div>' +
+      '<div class="t-n">' + e.no + '. ' + e.name + '</div>' +
+      '<div class="t-ep">' + e.era + ' · ' + e.vol + '</div>' +
+      '<div class="t-r">' + e.changed + '</div>' +
+    '</div></div>';
+  tip.classList.add('on');
+  moveTip(mx, my);
+}
 
 function showTip(p, mx, my) {
   const fac = FACTIONS[p.f];
@@ -1895,6 +2227,7 @@ function setMode(m, id, refit) {
 
 function selectNode(id) {
   selId = id;
+  evtPick = null; evtReturnId = null; hoverEvt = null;
   tip.classList.remove('on');
   if (mode !== 'focus') setMode('focus', id, true);
   else { focusId = id; placeAll(); fitView(); }
@@ -1938,6 +2271,67 @@ function quotesHtml(id) {
     '</div>';
 }
 
+/* ── 名场面：人物面板里的清单 ── */
+function eventsHtml(id) {
+  const list = EVENTS.filter(e => e.who.indexOf(id) >= 0);
+  if (!list.length) return '';
+  return '<div class="d-sec">' +
+    '<h3><span class="bar" style="background:var(--seal)"></span>经历过的名场面 · ' + list.length + '</h3>' +
+    '<div class="d-evlist">' +
+      list.map(e =>
+        '<button class="d-evrow" type="button" data-ev="' + e.id + '">' +
+          '<span class="dia"></span>' + e.name +
+          '<span class="v">' + e.vol + '</span>' +
+        '</button>').join('') +
+    '</div>' +
+  '</div>';
+}
+
+/* ── 名场面：选中之后右侧那张卡 ── */
+function renderEventCard(e) {
+  detail.innerHTML =
+    '<div class="d-ev-head">' +
+      '<span class="d-ev-era">' + e.era + ' · 第 ' + e.no + ' 个名场面</span>' +
+      '<span class="d-ev-vol">' + e.vol + '</span>' +
+    '</div>' +
+    '<p class="d-ev-name">' + e.name + '</p>' +
+    '<p class="d-ev-line">' + e.what + '</p>' +
+    '<div class="d-ev-changed"><b>改变了什么</b>' + e.changed + '</div>' +
+    '<div class="d-sec">' +
+      '<h3><span class="bar" style="background:var(--seal)"></span>当事人 · ' + e.people.length + '</h3>' +
+      '<div class="ev-people">' +
+        e.people.map(n =>
+          '<button class="ev-p" type="button" data-id="' + n.id + '" style="--fc:' + FACTIONS[n.f].color + '">' +
+            (n.av ? '<img src="' + n.av + '" alt="">' : '') + n.name +
+          '</button>').join('') +
+      '</div>' +
+    '</div>' +
+    '<div class="d-acts">' +
+      '<button type="button" id="evClear">← 返回人物</button>' +
+      '<button type="button" id="evAll">看全部名场面</button>' +
+    '</div>';
+
+  detail.querySelectorAll('.ev-p').forEach(b =>
+    b.addEventListener('click', () => { evtPick = null; selectNode(b.dataset.id); }));
+  const c = detail.querySelector('#evClear');
+  if (c) c.addEventListener('click', () => {
+    const back = evtReturnId;
+    evtPick = null;
+    if (back) selectNode(back); else { renderDetail(); updateHint(); }
+  });
+  const a = detail.querySelector('#evAll');
+  if (a) a.addEventListener('click', () => openEvents());
+}
+
+function selectEvent(id) {
+  if (!evById.has(id)) return;
+  if (!evtPick) evtReturnId = selId || focusId || null;
+  evtPick = id;
+  tip.classList.remove('on');
+  renderDetail();
+  updateHint();
+}
+
 function emptyPanel() {
   const top = links.slice().sort((a, b) => b.heat - a.heat).slice(0, 4);
   detail.innerHTML =
@@ -1966,6 +2360,7 @@ function emptyPanel() {
 }
 
 function renderDetail() {
+  if (evtPick && evById.has(evtPick)) { renderEventCard(evById.get(evtPick)); return; }
   const id = (mode === 'focus') ? focusId : selId;
   if (!id) { emptyPanel(); return; }
   const p = byId.get(id);
@@ -2037,6 +2432,7 @@ function renderDetail() {
     (p.why ? '<p class="d-why">' + p.why + '</p>' : '') +
     '<p class="d-note">' + p.note + '</p>' +
     quotesHtml(p.id) +
+    eventsHtml(p.id) +
     relHtml +
     '<div class="d-acts">' +
       (inFocus
@@ -2047,6 +2443,8 @@ function renderDetail() {
 
   detail.querySelectorAll('.rel').forEach(b =>
     b.addEventListener('click', () => selectNode(b.dataset.id)));
+  detail.querySelectorAll('.d-evrow').forEach(b =>
+    b.addEventListener('click', () => selectEvent(b.dataset.ev)));
   const bk = detail.querySelector('#dBack');
   if (bk) bk.addEventListener('click', () => { selId = null; setMode('zone', null, true); });
   const fc = detail.querySelector('#dFocus');
@@ -2176,7 +2574,7 @@ function updateHint() {
     zone:  '<b>分区视图</b> · 按阵营分块 · <b>点头像</b>进入聚焦',
     gen:   '<b>分层视图</b> · 从左到右＝时代推进 · <b>点头像</b>进入聚焦'
   }[mode];
-  hintBar.innerHTML = '<span>' + t + emo + '</span><span>滚轮缩放 · 拖空白平移 · <kbd>Esc</kbd> 返回 · <kbd>/</kbd> 搜索 · <kbd>Q</kbd> 名言</span>';
+  hintBar.innerHTML = '<span>' + t + emo + '</span><span>滚轮缩放 · 拖空白平移 · <kbd>Esc</kbd> 返回 · <kbd>/</kbd> 搜索 · <kbd>Q</kbd> 名言 · <kbd>E</kbd> 名场面</span>';
 }
 
 const searchEl = document.getElementById('search');
@@ -2246,8 +2644,13 @@ document.addEventListener('keydown', e => {
     if (e.key === 'Escape') { e.preventDefault(); closeQuotes(); }
     return;
   }
+  if (eventOv.classList.contains('on')) {
+    if (e.key === 'Escape') { e.preventDefault(); closeEvents(); }
+    return;
+  }
   if (e.key === 'Escape') {
     if (document.activeElement === searchEl) return;
+    if (evtPick) { evtPick = null; renderDetail(); updateHint(); return; }
     selId = null;
     if (mode === 'focus') setMode('zone', null, true); else renderDetail();
   } else if (e.key === '/' && document.activeElement !== searchEl) {
@@ -2255,6 +2658,9 @@ document.addEventListener('keydown', e => {
   } else if (e.key === 'q' && !e.ctrlKey && !e.metaKey && !e.altKey) {
     const tag = (document.activeElement && document.activeElement.tagName) || '';
     if (tag !== 'INPUT' && tag !== 'TEXTAREA') { e.preventDefault(); openQuotes(); }
+  } else if (e.key === 'e' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    const tag = (document.activeElement && document.activeElement.tagName) || '';
+    if (tag !== 'INPUT' && tag !== 'TEXTAREA') { e.preventDefault(); openEvents(); }
   }
 });
 
@@ -2396,6 +2802,112 @@ qovInput.addEventListener('input', () => {
   qovTimer = setTimeout(() => { qovPick = null; renderQuotes(); }, 120);
 });
 quoteOv.addEventListener('click', e => { if (e.target === quoteOv) closeQuotes(); });
+
+/* ══════════════════════════════════════════════════════════════════
+   9.6 名场面 · 年表（全屏总览）
+   ══════════════════════════════════════════════════════════════════ */
+
+const eventOv = document.getElementById('eventOverlay');
+const evBody  = document.getElementById('evBody');
+const evInput = document.getElementById('evInput');
+const evCount = document.getElementById('evCount');
+
+const ERAS = ['序章', '第一部', '疾风传', '忍界大战', '新时代'];
+const ERASUB = {
+  '序章': '第 1–4 卷', '第一部': '第 5–27 卷', '疾风传': '第 28–48 卷',
+  '忍界大战': '第 49–72 卷', '新时代': '外传'
+};
+
+function evItemHtml(e) {
+  return '<article class="ev-item" data-id="' + e.id + '" role="button" tabindex="0">' +
+    '<div class="ev-top">' +
+      '<span class="ev-vol">' + e.vol + '</span>' +
+      '<span class="ev-n">' + e.people.length + ' 人</span>' +
+    '</div>' +
+    '<h5>' + e.no + '. ' + e.name + '</h5>' +
+    '<p class="ev-what">' + e.what + '</p>' +
+    '<p class="ev-changed"><span class="ev-tag">改变</span><span>' + e.changed + '</span></p>' +
+    '<div class="ev-people">' +
+      e.people.map(n =>
+        '<button class="ev-p" type="button" data-id="' + n.id + '" style="--fc:' + FACTIONS[n.f].color + '" title="' + n.name + ' · ' + (n.ep || n.title) + '">' +
+          (n.av ? '<img src="' + n.av + '" alt="">' : '') + n.short +
+        '</button>').join('') +
+    '</div>' +
+  '</article>';
+}
+
+function renderEvents() {
+  const text = evInput.value.trim().toLowerCase();
+  const hit = e => !text ||
+    e.name.toLowerCase().includes(text) ||
+    (e.s || '').toLowerCase().includes(text) ||
+    e.what.toLowerCase().includes(text) ||
+    e.changed.toLowerCase().includes(text) ||
+    e.vol.toLowerCase().includes(text) ||
+    e.era.toLowerCase().includes(text) ||
+    e.people.some(n => n.name.toLowerCase().includes(text) ||
+      n.short.toLowerCase().includes(text) || (n.ep || '').includes(text));
+
+  const rows = EVENTS.filter(hit);
+  evCount.textContent = rows.length + ' / ' + EVENTS.length + ' 个名场面';
+
+  if (!rows.length) {
+    evBody.innerHTML = '<div class="ev-empty">没有找到符合条件的名场面</div>';
+    return;
+  }
+
+  let html = '';
+  ERAS.forEach(era => {
+    const g = rows.filter(e => e.era === era);
+    if (!g.length) return;
+    html += '<section class="ev-era">' +
+      '<h4>' + era + '<em>' + (ERASUB[era] || '') + '</em><em>' + g.length + ' 个</em></h4>' +
+      '<div class="ev-list">' + g.map(evItemHtml).join('') + '</div>' +
+    '</section>';
+  });
+  evBody.innerHTML = html;
+
+  evBody.querySelectorAll('.ev-item').forEach(el => {
+    const go = () => { closeEvents(); selectEvent(el.dataset.id); };
+    el.addEventListener('click', go);
+    el.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); go(); }
+    });
+  });
+  evBody.querySelectorAll('.ev-p').forEach(b =>
+    b.addEventListener('click', ev => { ev.stopPropagation(); closeEvents(); selectNode(b.dataset.id); }));
+}
+
+function openEvents() {
+  eventOv.classList.add('on');
+  eventOv.setAttribute('aria-hidden', 'false');
+  renderEvents();
+  evInput.focus();
+}
+
+function closeEvents() {
+  eventOv.classList.remove('on');
+  eventOv.setAttribute('aria-hidden', 'true');
+  evInput.value = '';
+}
+
+document.getElementById('btnEvents').addEventListener('click', openEvents);
+document.getElementById('evClose').addEventListener('click', closeEvents);
+let evTimer = 0;
+evInput.addEventListener('input', () => {
+  clearTimeout(evTimer);
+  evTimer = setTimeout(renderEvents, 120);
+});
+eventOv.addEventListener('click', e => { if (e.target === eventOv) closeEvents(); });
+
+/* 画布上的「事件」开关：聚焦视图里挂不挂那条名场面时间带 */
+const btnEvLayer = document.getElementById('btnEvLayer');
+btnEvLayer.setAttribute('aria-pressed', String(evLayer));
+btnEvLayer.addEventListener('click', () => {
+  evLayer = !evLayer;
+  btnEvLayer.setAttribute('aria-pressed', String(evLayer));
+  placeAll(); fitView();
+});
 
 /* ══════════════════════════════════════════════════════════════════
    10. 启动
